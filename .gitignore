@@ -1,0 +1,9 @@
+/logs/
+/.env
+/.env.*
+!/.env.example
+**/wp-config.php
+**/wp-content/uploads/
+logs/mail.log
+/tradehub-headless.php
+/.vscode/
