@@ -60,6 +60,7 @@ p { margin: 0 0 1rem; }
 .primary-nav > a.is-active { color: var(--brand); }
 .nav-admin { color: var(--accent) !important; }
 .nav-actions { display: flex; align-items: center; gap: .6rem; padding-left: 1.15rem; border-left: 1px solid var(--line); }
+.nav-actions form { margin: 0; }
 .cart-link { position: relative; font-weight: 600; display: inline-flex; align-items: center; gap: .4rem; }
 .cart-count {
   min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
@@ -327,10 +328,16 @@ table.data td.num, table.data th.num { text-align: right; }
 .admin-side { background: #0f2f2b; color: #d9e8e4; padding: 1.4rem 1rem; }
 .admin-side .brand-name { color: #fff; }
 .admin-side nav { margin-top: 1.75rem; display: grid; gap: .2rem; }
+.admin-side nav form { margin: 0; }
 .admin-side a {
   color: #c9ddd8; padding: .58rem .75rem; border-radius: 9px; font-size: .9rem; font-weight: 500;
   display: flex; align-items: center; justify-content: space-between; gap: .5rem;
 }
+.admin-side nav button {
+  width: 100%; color: #c9ddd8; padding: .58rem .75rem; border: 0; border-radius: 9px;
+  background: transparent; font: inherit; font-size: .9rem; font-weight: 500; text-align: left; cursor: pointer;
+}
+.admin-side nav button:hover { background: rgba(255, 255, 255, .08); color: #fff; }
 .admin-side a:hover { background: rgba(255, 255, 255, .08); text-decoration: none; color: #fff; }
 .admin-side a.is-active { background: var(--brand); color: #fff; font-weight: 600; }
 .admin-side .side-sep { height: 1px; background: rgba(255, 255, 255, .12); margin: .8rem .4rem; }
