@@ -2,6 +2,11 @@
 /.env
 /.env.*
 !/.env.example
+/laravel-backend/.env
+/laravel-backend/.env.*
+!/laravel-backend/.env.example
+/laravel-backend/vendor/
+/laravel-backend/storage/framework/
 **/wp-config.php
 **/wp-content/uploads/
 logs/mail.log

@@ -24,6 +24,10 @@ sales, while optional WordPress integration provides headless content management
 4. Adjust database credentials in `config/config.php` if your MySQL user is not `root`
    with an empty password. Environment variables (`TRADEHUB_DB_*`) also work.
 
+For an existing `tradehub` database, do not re-import `sql/schema.sql` because it drops
+tables. Run `sql/migrate_live_delivery_tracking.sql` once in phpMyAdmin to add the rider role,
+delivery status, and tracking table.
+
 Demo accounts:
 
 | Role | Email | Password |
@@ -41,17 +45,29 @@ Demo accounts:
   in-stock filter, four sort orders, and pagination.
 - Product detail page with live stock and related items.
 - Session cart, quantity validation against stock, and a two-step checkout.
-- Order history with status badges, plus profile and password management.
+- Cash-on-delivery checkout, order history, and a live map for the assigned delivery rider.
+- Profile and password management.
 
 **Admin panel** (`/admin/`, Administrator role only)
 - Dashboard: gross sales, commission, order counts, low-stock alerts, recent transactions.
 - Products: create, edit, hide/show, delete (products with order history are deactivated).
 - Categories: create, edit, delete (blocked while products reference the category).
-- Users: view accounts, change role, activate/deactivate.
+- Orders: update status, assign COD orders to active riders, and add tracking numbers.
+- Users: view accounts, change role, activate/deactivate. Promote a normal account to **Delivery Rider**.
 - Content: configure the WordPress connection and open its content dashboard; when WordPress
   is not configured, the legacy local content editor remains available.
 - Sales reports: date-range gross sales, commission, seller payout, average order,
   sales by category, top products, and a transaction log.
+
+**Delivery rider**
+- Register a normal account, then ask an administrator to change its role to **Delivery Rider**
+  in **Admin → Users**.
+- The administrator assigns COD deliveries in **Admin → Orders**.
+- Riders sign in at `/login.php`, open the delivery dashboard on their phone, start delivery,
+  and allow location access to share GPS. Customers see the latest location on **My orders**.
+- GPS sharing requires the rider page to stay open and a secure browser context (HTTPS, or
+  `localhost` during local testing). The map uses Leaflet and OpenStreetMap tiles, so map tiles
+  require an internet connection.
 
 ## WordPress headless CMS
 
@@ -77,15 +93,16 @@ unavailable, TradeHub logs the error in the PHP error log and uses its local con
 
 ## Database
 
-Database `tradehub`, seven relational tables (five required plus local fallback content tables):
+Database `tradehub`, eight relational tables:
 
 | Table | Purpose |
 | --- | --- |
-| `roles` | Administrator / Customer |
+| `roles` | Administrator / Customer / Delivery Rider |
 | `users` | Accounts, bcrypt hashes, profile, status, role FK |
 | `categories` | Product classification |
 | `products` | Catalog, price, stock, availability, category FK |
 | `transactions` | Order lines; rows sharing a `reference` form one order |
+| `order_delivery_tracking` | Delivery address, assigned rider, and latest GPS location per order |
 | `announcements` | CMS announcements |
 | `settings` | CMS site copy + commission rate |
 
@@ -110,6 +127,8 @@ Defaults: `smtp.gmail.com:587`, STARTTLS. Until credentials are set, messages ar
 - CSRF tokens on every POST form; tokens compared with `hash_equals`.
 - Session hardening: HttpOnly + SameSite=Lax cookies, ID regeneration on login and every 30 min.
 - Role-based authorization (`require_admin()`), plus server-side ownership scoping for orders.
+- Rider GPS updates are limited to assigned, active COD deliveries; customers can retrieve
+  locations only for their own orders.
 - Input validation on email, phone, password strength, price, stock, and enums.
 - All output escaped with `htmlspecialchars`; login throttled after 5 failed attempts.
 

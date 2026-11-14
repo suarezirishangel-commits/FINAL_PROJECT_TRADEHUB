@@ -1,8 +1,12 @@
 <?php
 require __DIR__ . '/includes/bootstrap.php';
 
-if (current_user()) {
-    redirect('index.php');
+$loggedInUser = current_user();
+if ($loggedInUser) {
+    if ($loggedInUser['role_name'] === 'Administrator') {
+        redirect('admin/index.php');
+    }
+    redirect($loggedInUser['role_name'] === 'Delivery Rider' ? 'rider.php' : 'index.php');
 }
 
 $errors = [];
@@ -44,7 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 unset($_SESSION['login_attempts']);
 
                 flash('success', 'Welcome back!');
-                redirect($account['role_name'] === 'Administrator' ? 'admin/index.php' : 'index.php');
+                if ($account['role_name'] === 'Administrator') {
+                    redirect('admin/index.php');
+                }
+                redirect($account['role_name'] === 'Delivery Rider' ? 'rider.php' : 'index.php');
             }
 
             $attempts['count'] = (int) $attempts['count'] + 1;

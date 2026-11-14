@@ -6,6 +6,7 @@ CREATE DATABASE IF NOT EXISTS tradehub
 USE tradehub;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS order_delivery_tracking;
 DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS announcements;
 DROP TABLE IF EXISTS settings;
@@ -75,7 +76,7 @@ CREATE TABLE transactions (
   unit_price    DECIMAL(10,2) NOT NULL,
   total_amount  DECIMAL(10,2) NOT NULL,
   payment_method VARCHAR(30) NOT NULL DEFAULT 'cod',
-  status        ENUM('pending','paid','completed','cancelled') NOT NULL DEFAULT 'pending',
+  status        ENUM('pending','paid','out_for_delivery','completed','cancelled') NOT NULL DEFAULT 'pending',
   tracking_number VARCHAR(64) DEFAULT NULL,
   paid_at       DATETIME DEFAULT NULL,
   completed_at  DATETIME DEFAULT NULL,
@@ -87,6 +88,19 @@ CREATE TABLE transactions (
   KEY idx_transactions_created (created_at),
   CONSTRAINT fk_transactions_user FOREIGN KEY (user_id) REFERENCES users (id),
   CONSTRAINT fk_transactions_product FOREIGN KEY (product_id) REFERENCES products (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE order_delivery_tracking (
+  reference           VARCHAR(20) NOT NULL,
+  delivery_address    VARCHAR(255) NOT NULL DEFAULT '',
+  rider_id            INT UNSIGNED DEFAULT NULL,
+  latitude            DECIMAL(10,7) DEFAULT NULL,
+  longitude           DECIMAL(10,7) DEFAULT NULL,
+  location_updated_at DATETIME DEFAULT NULL,
+  delivery_started_at DATETIME DEFAULT NULL,
+  PRIMARY KEY (reference),
+  KEY idx_delivery_tracking_rider (rider_id),
+  CONSTRAINT fk_delivery_tracking_rider FOREIGN KEY (rider_id) REFERENCES users (id)
 ) ENGINE=InnoDB;
 
 -- CMS content: announcements shown on the storefront.

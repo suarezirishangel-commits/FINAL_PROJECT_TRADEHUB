@@ -2,7 +2,8 @@ USE tradehub;
 
 INSERT INTO roles (id, name) VALUES
   (1, 'Administrator'),
-  (2, 'Customer');
+  (2, 'Customer'),
+  (3, 'Delivery Rider');
 
 -- Password: Admin@123 / Customer@123 (bcrypt)
 INSERT INTO users (id, role_id, full_name, email, phone, address, password_hash, status) VALUES
