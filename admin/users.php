@@ -50,7 +50,7 @@ $users = db()->query(
 require __DIR__ . '/_header.php';
 ?>
 <div class="admin-topbar">
-  <div><h1>Users</h1><p><?= count($users) ?> accounts. Administrators manage the marketplace; customers buy from it.</p></div>
+  <div><h1>Users</h1><p><?= count($users) ?> accounts. Assign the Delivery Rider role to accounts used by couriers.</p></div>
 </div>
 
 <div class="table-wrap">
