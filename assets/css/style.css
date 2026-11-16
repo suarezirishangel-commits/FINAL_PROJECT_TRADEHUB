@@ -183,6 +183,7 @@ p { margin: 0 0 1rem; }
 .badge-status { background: #eef2f4; color: #3c4a52; }
 .badge-pending { background: #fff4dd; color: #92400e; }
 .badge-paid, .badge-completed { background: #e9f8ef; color: #166534; }
+.badge-out-for-delivery { background: #e8f0fe; color: #1d4ed8; }
 .badge-cancelled { background: #fdecec; color: #991b1b; }
 
 /* ---------- Catalog layout ---------- */
@@ -294,9 +295,22 @@ p { margin: 0 0 1rem; }
 .track-timeline strong { font-size: .86rem; }
 .track-timeline small { display: block; color: var(--muted); font-size: .78rem; margin-top: .1rem; }
 .track-meta { display: flex; flex-wrap: wrap; gap: .3rem 1rem; font-size: .84rem; }
+.live-tracking { margin: 1rem 0; padding: 1rem; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.live-tracking h3 { font-size: .96rem; margin-bottom: .35rem; }
+.live-tracking > .hint { margin: 0 0 .75rem; }
+.map-status { margin: 0 0 .55rem; font-size: .84rem; color: var(--muted); }
+.delivery-map { height: 280px; border: 1px solid var(--line); border-radius: 10px; background: #eef3f1; z-index: 0; }
+.delivery-map[hidden] { display: none !important; }
 .order-manage { display: flex; gap: .75rem; align-items: flex-end; flex-wrap: wrap; padding: .9rem 1.15rem; border-top: 1px solid var(--line); background: #fbfdfc; }
 .order-manage .field { margin: 0; }
 .order-manage .field input { min-width: 210px; }
+.rider-order-details { padding: .8rem 1.15rem; }
+.rider-order-details p { margin: 0 0 .45rem; font-size: .9rem; }
+.rider-order-details .order-items { padding: .35rem 0 0; }
+.rider-actions { display: flex; align-items: flex-end; gap: .65rem; flex-wrap: wrap; padding: .9rem 1.15rem; border-top: 1px solid var(--line); background: #fbfdfc; }
+.rider-actions form { margin: 0; }
+.rider-gps-controls { min-width: min(100%, 300px); }
+.rider-gps-controls .hint { margin: .35rem 0 0; }
 
 /* ---------- Forms / auth ---------- */
 .auth-wrap { display: grid; place-items: center; padding: 3rem 0 4rem; }

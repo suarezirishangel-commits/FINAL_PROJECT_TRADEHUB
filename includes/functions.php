@@ -106,6 +106,12 @@ function is_admin(): bool
     return $user !== null && $user['role_name'] === 'Administrator';
 }
 
+function is_delivery_rider(): bool
+{
+    $user = current_user();
+    return $user !== null && $user['role_name'] === 'Delivery Rider';
+}
+
 function require_login(): void
 {
     if (!current_user()) {
@@ -120,6 +126,15 @@ function require_admin(): void
     if (!is_admin()) {
         http_response_code(403);
         exit('403 — Administrator access required.');
+    }
+}
+
+function require_delivery_rider(): void
+{
+    require_login();
+    if (!is_delivery_rider()) {
+        http_response_code(403);
+        exit('403 — Delivery rider access required.');
     }
 }
 
@@ -352,13 +367,19 @@ function order_reference(): string
 /** How far an order status has progressed; lower means less advanced. */
 function order_status_rank(string $status): int
 {
-    return ['cancelled' => 0, 'pending' => 1, 'paid' => 2, 'completed' => 3][$status] ?? 0;
+    return [
+        'cancelled' => 0,
+        'pending' => 1,
+        'paid' => 2,
+        'out_for_delivery' => 3,
+        'completed' => 4,
+    ][$status] ?? 0;
 }
 
 /**
  * Customer-facing tracking timeline for one order.
  *
- * @param array{status: string, created_at?: ?string, paid_at?: ?string, completed_at?: ?string, cancelled_at?: ?string} $order
+ * @param array{status: string, payment_method?: string, created_at?: ?string, paid_at?: ?string, delivery_started_at?: ?string, completed_at?: ?string, cancelled_at?: ?string} $order
  * @return array<int, array{label: string, at: ?string, done: bool, cancelled: bool}>
  */
 function order_tracking_steps(array $order): array
@@ -366,22 +387,48 @@ function order_tracking_steps(array $order): array
     $status = (string) $order['status'];
     $paidAt = $order['paid_at'] ?? null;
     $completedAt = $order['completed_at'] ?? null;
+    $deliveryStartedAt = $order['delivery_started_at'] ?? null;
+    $isCod = ($order['payment_method'] ?? '') === 'cod';
+    $deliveryStarted = $deliveryStartedAt !== null
+        || in_array($status, ['out_for_delivery', 'completed'], true);
 
     $steps = [
         ['label' => 'Order placed', 'at' => $order['created_at'] ?? null, 'done' => true, 'cancelled' => false],
-        [
-            'label'  => 'Payment confirmed',
-            'at'     => $paidAt,
-            'done'   => $paidAt !== null || in_array($status, ['paid', 'completed'], true),
-            'cancelled' => false,
-        ],
     ];
+
+    if ($isCod) {
+        $steps[] = [
+            'label' => 'Out for delivery',
+            'at' => $deliveryStartedAt,
+            'done' => $deliveryStarted,
+            'cancelled' => false,
+        ];
+        $steps[] = [
+            'label' => 'Cash collected',
+            'at' => $paidAt,
+            'done' => $paidAt !== null,
+            'cancelled' => false,
+        ];
+    } else {
+        $steps[] = [
+            'label' => 'Payment confirmed',
+            'at' => $paidAt,
+            'done' => $paidAt !== null || in_array($status, ['paid', 'completed'], true),
+            'cancelled' => false,
+        ];
+        $steps[] = [
+            'label' => 'Out for delivery',
+            'at' => $deliveryStartedAt,
+            'done' => $deliveryStarted,
+            'cancelled' => false,
+        ];
+    }
 
     if ($status === 'cancelled') {
         $steps[] = ['label' => 'Order cancelled', 'at' => $order['cancelled_at'] ?? null, 'done' => true, 'cancelled' => true];
     } else {
         $steps[] = [
-            'label'  => 'Order completed',
+            'label'  => 'Delivered',
             'at'     => $completedAt,
             'done'   => $completedAt !== null || $status === 'completed',
             'cancelled' => false,

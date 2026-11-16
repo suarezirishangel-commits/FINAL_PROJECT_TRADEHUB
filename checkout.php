@@ -104,6 +104,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $decrement->execute([$item['quantity'], $item['product_id']]);
             }
 
+            $delivery = $pdo->prepare(
+                'INSERT INTO order_delivery_tracking (reference, delivery_address)
+                 VALUES (?, ?)'
+            );
+            $delivery->execute([$reference, $form['address']]);
+
             $pdo->commit();
             $_SESSION['cart'] = [];
 
