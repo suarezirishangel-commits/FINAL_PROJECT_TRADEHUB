@@ -6,10 +6,23 @@ contains the existing PHP application at the project root and a Laravel 12 migra
 `laravel-backend/`; these are separate applications that use the TradeHub MySQL database.
 
 ## Business Overview
+TradeHub is a web-based local product marketplace that helps customers discover and order
+products through one online platform. Administrators manage product listings, categories, user
+accounts, orders, and marketplace content. Customers can browse products, check descriptions,
+prices, and stock, place orders, and follow order progress.
+
+The platform is designed to help local sellers reach more customers. Administrators manage
+product and category listings; the application does not currently provide a separate seller
+account role or seller inquiry feature.
 
 ### Problem
-Local sellers and micro-entrepreneurs need a way to reach nearby customers online. Customers
-need a convenient place to browse local products, place orders, and follow order progress.
+Local sellers may rely on separate social media pages and group posts to promote their products.
+Product information can become scattered, difficult to search, or outdated, while customers
+may need to visit multiple pages to compare products and prices.
+
+TradeHub addresses this problem by organizing product listings into searchable categories and
+providing customers with a single place to browse products, place orders, and follow order
+progress. Administrators maintain listings and marketplace information on behalf of sellers.
 
 ### Target Users
 - Customers who browse and order products
