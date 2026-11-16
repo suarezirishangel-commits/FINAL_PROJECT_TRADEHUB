@@ -1,181 +1,157 @@
-# TradeHub — Startup-Oriented Web Application with CMS and System Integration
+# TradeHub — Local Product Marketplace
 
-## Project Title
-TradeHub: Startup-Oriented Web Application Development with CMS and System Integration
+TradeHub is a startup-oriented marketplace for local products. It provides product discovery,
+online ordering, customer accounts, order management, and CMS integration. The repository
+contains the existing PHP application at the project root and a Laravel 12 migration in
+`laravel-backend/`; these are separate applications that use the TradeHub MySQL database.
 
-## Project Description
-TradeHub is a responsive web-based business application designed to address a real-world local commerce problem by connecting buyers, sellers, and delivery services in one digital platform. The system supports local product discovery, online ordering, digital transactions, and content management through a CMS-based admin interface.
+## Business Overview
 
-The project is designed as a functional startup solution that can be deployed for real business operations. It combines a customer-facing storefront, administrative management, database integration, CMS capabilities, and system integrations such as email notifications, rider GPS tracking, and WordPress-based content management.
-
-## Project Objectives
-At the end of this project, the goal is to:
-- Develop a complete web application that solves a practical business need.
-- Apply system integration concepts in a working solution.
-- Use a CMS platform for content and system management.
-- Implement secure user authentication and authorization.
-- Design a revenue-generating digital business model.
-- Present a valid startup concept with working business features.
-
-## Business Proposal
-
-### Problem Statement
-Local sellers and micro-entrepreneurs often struggle to reach nearby customers online without a dedicated platform for product discovery, ordering, and delivery coordination. Customers, meanwhile, need a fast, reliable, and transparent way to browse local goods, place orders, and track deliveries.
+### Problem
+Local sellers and micro-entrepreneurs need a way to reach nearby customers online. Customers
+need a convenient place to browse local products, place orders, and follow order progress.
 
 ### Target Users
-- Local customers who want to buy products online
-- Local sellers who want to list and manage products
-- Delivery riders who handle cash-on-delivery orders
-- Administrators who manage products, orders, users, and reports
+- Customers who browse and order products
+- Local sellers whose products are listed on the marketplace
+- Administrators who manage products, orders, users, content, and reports
+- Delivery riders who handle assigned deliveries in the legacy PHP application
 
-### Value Proposition
-TradeHub offers a simple and practical marketplace where users can browse products, place orders, track deliveries, and manage accounts in one unified system. It reduces friction for both buyers and sellers while supporting local business growth.
+### Value Proposition and Revenue Model
+TradeHub brings product discovery, ordering, and delivery coordination together in one
+platform. The business model uses a configurable commission on sales as platform revenue.
 
-### Revenue Model
-The system includes a commission-based business model where the platform earns a percentage from gross sales. This revenue model supports the idea of a digital startup that generates income through product transactions and platform fees.
+## System Components
 
-## Required Project Components
+### User Portal
+- Home page and business information
+- Product catalog with search, filters, sorting, and pagination
+- Product details, live stock, cart, and checkout
+- Registration, login, profile and password management
+- Order history and order status
 
-### A. Web App / User Portal
-The user-facing side includes:
-- Home page with business overview and highlights
-- Product catalog with search, filtering, sorting, and pagination
-- Product detail page with live pricing and stock availability
-- User registration and login
-- User profile management
-- Cart and checkout flow
-- Order history and order tracking
-- Rider tracking page for live delivery status
+### Major Modules
+- Product and category management
+- Online ordering and checkout
+- User and role management
+- Order and delivery tracking
+- Sales reports and commission monitoring
 
-### B. Major System Modules
-The system includes at least three major modules:
-- Product Management
-- Online Ordering and Checkout
-- Order Tracking and Delivery Management
-- User and Role Management
-- Sales and Report Management
+### CMS and System Integration
+- WordPress headless CMS for storefront content and announcements
+- Gmail SMTP for order-confirmation email
+- Leaflet and OpenStreetMap for delivery maps in the legacy PHP application
 
-### C. CMS-Based Admin Panel
-The system uses WordPress as the CMS/admin platform for management tasks, including:
-- Website content management
-- Announcements
-- Product and category administration
-- User data and role management
-- Reports and sales monitoring
+## Applications in This Repository
 
-### D. System Integration Requirement
-The project integrates external systems and digital services, including:
-- Gmail SMTP for email notifications
-- WordPress headless CMS integration
-- Delivery rider GPS tracking with map display
-- Order tracking and status updates
+### Existing PHP Application
+The procedural PHP application at the repository root runs under Apache in WAMP. It includes
+the marketplace storefront, administrator pages, order management, cash-on-delivery rider
+assignment, and rider GPS tracking.
 
-### E. Database Requirements
-The project uses a relational MySQL database with more than five tables. It follows a structured design and supports core business functions such as users, products, categories, transactions, reports, announcements, and settings.
+Open it at <http://localhost/FINAL_PROJECT_TRADEHUB/>.
 
-Core database tables include:
-- roles
-- users
-- categories
-- products
-- transactions
-- order_delivery_tracking
-- announcements
-- settings
+### Laravel Migration
+The Laravel 12 application is in `laravel-backend/` and runs separately from the root PHP
+application. It uses Blade and the existing `tradehub` database. The legacy PHP application
+remains available while the Laravel version is developed and verified; do not assume every
+legacy feature is present in the Laravel application.
 
-### F. Security Requirements
-The system implements:
-- Authentication
-- Authorization by role
-- Password encryption using bcrypt
-- Input validation
-- Session management
-- CSRF protection
-- Secure database access using prepared statements
+## Technology
+- PHP 8.2+
+- Laravel 12 and Blade for the migration application
+- MySQL 8 / MariaDB
+- WordPress headless CMS plugin
+- HTML, CSS, and JavaScript
+- PDO prepared statements in the legacy PHP application
+- PHPMailer / SMTP for email integration
 
-### G. User Roles
-The platform supports multiple roles, including:
-- Administrator
-  - Manage content
-  - Manage users
-  - View reports
-  - Manage orders and products
-- Customer
-  - Browse products
-  - Place orders
-  - Manage profile
-  - Track order status
-- Delivery Rider
-  - Receive assigned deliveries
-  - Update delivery status and GPS location
+## Local Setup
 
-## Functional Features
+### Database and Legacy PHP Application (WAMP)
+1. Start WAMP (Apache and MySQL).
+2. If the `tradehub` database does not exist, import `sql/schema.sql` and then `sql/seed.sql`
+   using phpMyAdmin. **The schema drops and recreates tables. Do not import it into a database
+   containing data you need to keep.**
+3. Configure the database credentials in `config/config.php` or with the `TRADEHUB_DB_*`
+   environment variables. The default database name is `tradehub`.
+4. Open <http://localhost/FINAL_PROJECT_TRADEHUB/>.
 
-### Storefront Features
-- Product browsing and filtering
-- Search for products by keyword
-- Product detail page
-- Add to cart and quantity validation
-- Checkout with delivery details
-- Order history and tracking
-- Profile update and password change
+### Laravel Application
+1. Start WAMP and confirm the existing `tradehub` database is available.
+2. In PowerShell, install dependencies and create `.env` only if it does not already exist:
 
-### Admin Features
-- Dashboard with sales overview
-- Manage products and categories
-- Manage orders and delivery assignments
-- Manage users and roles
-- View commission and sales reports
-- Publish announcements and manage site content
+   ```powershell
+   Set-Location 'C:\wamp64\www\FINAL_PROJECT_TRADEHUB\laravel-backend'
+   composer install
+   if (!(Test-Path .env)) { Copy-Item .env.example .env }
+   ```
 
-### Delivery Rider Features
-- Rider login
-- Assigned order view
-- Delivery status updates
-- GPS location sharing
-- Route tracking and order progress updates
+3. Set `DB_DATABASE=tradehub`, `DB_USERNAME=root`, and your local MySQL password in
+   `laravel-backend/.env`. Generate the application key once:
 
-## CMS and WordPress Integration
-The project uses WordPress as the admin and CMS layer for the digital business system. It supports headless content delivery to the storefront and provides a plugin-based admin interface for managing products, orders, users, content, and reports.
+   ```powershell
+   php artisan key:generate
+   ```
 
-This architecture allows the project to demonstrate real CMS integration and system architecture beyond a single PHP app.
+4. Start the Laravel development server and open <http://127.0.0.1:8000>:
+
+   ```powershell
+   php artisan serve
+   ```
+
+The Laravel models use the existing TradeHub tables, including `users.password_hash`. Do not
+run `php artisan migrate` against `tradehub`; use the project's SQL schema instead.
+
+## WordPress Headless CMS
+WordPress can manage storefront content and announcements. The legacy PHP application also
+provides a TradeHub administration plugin for marketplace management.
+
+1. Install WordPress locally, for example at `http://localhost/wordpress`.
+2. Copy the complete `wordpress-plugin/tradehub-headless/` folder, including `includes/`, into
+   `wordpress/wp-content/plugins/`, then activate **TradeHub Headless CMS**.
+3. Give the WordPress database account access to the `tradehub` database. For a local
+   installation, configure the `TRADEHUB_DB_HOST`, `TRADEHUB_DB_PORT`, `TRADEHUB_DB_NAME`,
+   `TRADEHUB_DB_USER`, and `TRADEHUB_DB_PASS` constants in `wp-config.php`.
+4. Set `TRADEHUB_WP_URL` to the WordPress URL without a trailing slash. The Laravel application
+   reads it from `laravel-backend/.env`; the legacy PHP application reads it from the Apache/PHP
+   environment.
+5. Verify the content endpoint at
+   <http://localhost/wordpress/wp-json/tradehub/v1/content>.
 
 ## Database Design
-The database is implemented as a relational structure using MySQL. It stores business records for products, users, roles, transactions, announcements, and settings. This satisfies the requirement for a minimum of five database tables and relational database design.
+The relational MySQL schema is in `sql/schema.sql`. It defines eight tables:
 
-## System Requirements and Technology Stack
-- PHP 8.x
-- MySQL / MariaDB
-- WordPress CMS integration
-- HTML, CSS, JavaScript
-- PDO prepared statements
-- PHPMailer for email sending
-- Leaflet/OpenStreetMap for rider mapping
+| Table | Purpose |
+| --- | --- |
+| `roles` | Administrator, Customer, and Delivery Rider roles |
+| `users` | User accounts, password hashes, profiles, and role relation |
+| `categories` | Product categories |
+| `products` | Product details, prices, stock, and category relation |
+| `transactions` | Order lines grouped by order reference |
+| `order_delivery_tracking` | Delivery address, rider assignment, and latest GPS location |
+| `announcements` | Local fallback announcements |
+| `settings` | Local storefront settings and commission rate |
 
-## Setup and Local Development
-1. Place the project inside the WAMP server directory, typically:
-   `C:\wamp64\www\FINAL_PROJECT_TRADEHUB`
-2. Start WAMP (Apache + MySQL).
-3. Import the database using the SQL files in `sql/`.
-4. Update database credentials if needed in `config/config.php`.
-5. Open the application in the browser using:
-   `http://localhost/FINAL_PROJECT_TRADEHUB/`
-6. If WordPress CMS is being used, install WordPress locally and configure the TradeHub plugin.
+## Email Integration
+The legacy PHP checkout uses Gmail SMTP for order confirmations. Configure SMTP in
+`config/config.php` or with `TRADEHUB_SMTP_*` environment variables. Use a Google App Password,
+not your regular account password. The Laravel application uses its own mail settings in
+`laravel-backend/.env`.
+
+## Security
+- Passwords are stored as bcrypt hashes.
+- Authentication and role-based authorization protect account and administration features.
+- Forms use CSRF protection and validate user input.
+- Database operations use prepared statements or Laravel's database layer.
+- Sessions are hardened, and login attempts are rate limited.
+- Order and delivery access is restricted to authorized users.
 
 ## Demo Accounts
-- Administrator
-  - Email: admin@tradehub.test
-  - Password: Admin@123
-- Customer
-  - Email: customer@tradehub.test
-  - Password: Customer@123
 
-## Security Notes
-- Passwords are stored as hashed values using bcrypt.
-- Session management and CSRF protection are implemented.
-- Input values are validated before processing.
-- Sensitive business functions are restricted by user role.
-- Delivery tracking is limited to assigned and authorized users only.
+| Role | Email | Password |
+| --- | --- | --- |
+| Administrator | `admin@tradehub.test` | `Admin@123` |
+| Customer | `customer@tradehub.test` | `Customer@123` |
 
-## Summary
-TradeHub satisfies the required system components for a startup-oriented web application with CMS integration. It includes a public storefront, admin management, user authentication, database integration, revenue model, security controls, and system integration features needed for a business-focused project.
+Change demo credentials before deployment.
