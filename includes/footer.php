@@ -19,7 +19,9 @@
       <div>
         <h4>Account</h4>
         <ul>
-          <?php if (current_user()): ?>
+          <?php if (is_delivery_rider()): ?>
+            <li><a href="<?= e(url('rider.php')) ?>">Delivery dashboard</a></li>
+          <?php elseif (current_user()): ?>
             <li><a href="<?= e(url('profile.php')) ?>">Profile</a></li>
             <li><a href="<?= e(url('orders.php')) ?>">Order history</a></li>
           <?php else: ?>

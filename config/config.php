@@ -8,7 +8,7 @@ return [
     'db' => [
         'host'    => getenv('TRADEHUB_DB_HOST') ?: '127.0.0.1',
         'port'    => getenv('TRADEHUB_DB_PORT') ?: '3306',
-        'name'    => getenv('TRADEHUB_DB_NAME') ?: 'tradehub',
+       'name'    => getenv('TRADEHUB_DB_NAME') ?: 'tradehub',
         'user'    => getenv('TRADEHUB_DB_USER') ?: 'root',
         'pass'    => getenv('TRADEHUB_DB_PASS') ?: '',
         'charset' => 'utf8mb4',

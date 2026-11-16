@@ -4,7 +4,14 @@ require __DIR__ . '/includes/bootstrap.php';
 require_login();
 $user = current_user();
 
-$stmt = db()->prepare('SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC, id DESC');
+$stmt = db()->prepare(
+    'SELECT t.*, d.rider_id, d.delivery_address, d.latitude AS delivery_latitude,
+            d.longitude AS delivery_longitude, d.location_updated_at, d.delivery_started_at
+     FROM transactions t
+     LEFT JOIN order_delivery_tracking d ON d.reference = t.reference
+     WHERE t.user_id = ?
+     ORDER BY t.created_at DESC, t.id DESC'
+);
 $stmt->execute([$user['id']]);
 
 $orders = [];
@@ -20,6 +27,11 @@ foreach ($stmt->fetchAll() as $row) {
             'paid_at'         => $row['paid_at'],
             'completed_at'    => $row['completed_at'],
             'cancelled_at'    => $row['cancelled_at'],
+            'rider_id'        => $row['rider_id'],
+            'delivery_latitude' => $row['delivery_latitude'],
+            'delivery_longitude' => $row['delivery_longitude'],
+            'location_updated_at' => $row['location_updated_at'],
+            'delivery_started_at' => $row['delivery_started_at'],
             'total'           => 0.0,
             'items'           => [],
         ];
@@ -32,9 +44,18 @@ foreach ($stmt->fetchAll() as $row) {
     }
 }
 
+$hasCodOrders = false;
+foreach ($orders as $order) {
+    if ($order['payment_method'] === 'cod') {
+        $hasCodOrders = true;
+        break;
+    }
+}
+
 $highlight = (string) ($_GET['ref'] ?? '');
 $pageTitle = 'My orders';
 $active    = 'orders';
+$includeLeaflet = $hasCodOrders;
 require __DIR__ . '/includes/header.php';
 ?>
 <div class="container">
@@ -61,7 +82,7 @@ require __DIR__ . '/includes/header.php';
             <span class="hint"><?= e(date('M j, Y · g:i A', strtotime($order['created_at']))) ?> · <?= e(strtoupper($order['payment_method'])) ?></span>
           </div>
           <div style="display:flex;align-items:center;gap:.8rem">
-            <span class="badge badge-<?= e($order['status']) ?>"><?= e(ucfirst($order['status'])) ?></span>
+            <span class="badge badge-<?= e(str_replace('_', '-', $order['status'])) ?>"><?= e(ucwords(str_replace('_', ' ', $order['status']))) ?></span>
             <strong><?= format_price($order['total']) ?></strong>
           </div>
         </div>
@@ -90,6 +111,20 @@ require __DIR__ . '/includes/header.php';
               </li>
             <?php endforeach; ?>
           </ol>
+          <?php if ($order['payment_method'] === 'cod'): ?>
+            <section class="live-tracking" aria-label="Live COD delivery tracking">
+              <h3>Cash on delivery · Rider map</h3>
+              <p class="hint">Pay the rider when the order arrives. Live location is shared only while the rider is on delivery.</p>
+              <div class="order-map" data-order-map
+                   data-reference="<?= e($order['reference']) ?>"
+                   data-endpoint="<?= e(url('order-location.php')) ?>">
+                <p class="map-status" data-map-status aria-live="polite">
+                  <?= $order['rider_id'] === null ? 'Waiting for a rider to be assigned.' : 'Waiting for the rider to start delivery and share GPS.' ?>
+                </p>
+                <div class="delivery-map" data-map-canvas hidden></div>
+              </div>
+            </section>
+          <?php endif; ?>
           <div class="track-meta">
             <?php if (!empty($order['tracking_number'])): ?>
               <span>Tracking number: <strong><?= e($order['tracking_number']) ?></strong></span>
@@ -104,4 +139,8 @@ require __DIR__ . '/includes/header.php';
     <?php endforeach; ?>
   </div>
 </div>
+  <?php if ($hasCodOrders): ?>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="<?= e(url('assets/js/order-map.js')) ?>?v=<?= (int) filemtime(__DIR__ . '/assets/js/order-map.js') ?>" defer></script>
+  <?php endif; ?>
 <?php require __DIR__ . '/includes/footer.php'; ?>

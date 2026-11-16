@@ -17,6 +17,9 @@ $siteName   = setting('site_name', 'TradeHub');
 <title><?= e($pageTitle) ?> · <?= e($siteName) ?></title>
 <meta name="description" content="<?= e(setting('tagline')) ?>">
 <link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>">
+<?php if (!empty($includeLeaflet)): ?>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<?php endif; ?>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -34,7 +37,9 @@ $siteName   = setting('site_name', 'TradeHub');
     <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
       <a href="<?= e(url('index.php')) ?>" class="<?= $active === 'home' ? 'is-active' : '' ?>">Home</a>
       <a href="<?= e(url('products.php')) ?>" class="<?= $active === 'products' ? 'is-active' : '' ?>">Products</a>
-      <?php if ($user): ?>
+      <?php if ($user && $user['role_name'] === 'Delivery Rider'): ?>
+        <a href="<?= e(url('rider.php')) ?>" class="<?= $active === 'delivery' ? 'is-active' : '' ?>">Delivery dashboard</a>
+      <?php elseif ($user): ?>
         <a href="<?= e(url('orders.php')) ?>" class="<?= $active === 'orders' ? 'is-active' : '' ?>">My orders</a>
       <?php endif; ?>
       <?php if (is_admin()): ?>

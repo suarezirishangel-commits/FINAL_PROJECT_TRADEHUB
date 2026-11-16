@@ -1,141 +1,157 @@
 # TradeHub — Local Product Marketplace
 
-A responsive local marketplace powered by Laravel 12, Blade, and MySQL. Buyers browse and
-search local products with live stock and prices; administrators manage listings, users, and
-sales, while optional WordPress integration provides headless content management. The
-original procedural PHP app remains at the project root as a legacy reference; the Laravel
-application is in `laravel-backend/`.
+TradeHub is a startup-oriented marketplace for local products. It provides product discovery,
+online ordering, customer accounts, order management, and CMS integration. The repository
+contains the existing PHP application at the project root and a Laravel 12 migration in
+`laravel-backend/`; these are separate applications that use the TradeHub MySQL database.
 
-## Stack
+## Business Overview
 
-- Laravel 12 / PHP 8.2+ (tested on WAMP with PHP 8.3)
-- MySQL 8 / MariaDB using the existing `tradehub` schema
-- Laravel Blade storefront and admin pages, retaining the existing CSS/JavaScript
-- Optional WordPress headless CMS for storefront copy and announcements
+### Problem
+Local sellers and micro-entrepreneurs need a way to reach nearby customers online. Customers
+need a convenient place to browse local products, place orders, and follow order progress.
 
-## Run the Laravel app (WAMP)
+### Target Users
+- Customers who browse and order products
+- Local sellers whose products are listed on the marketplace
+- Administrators who manage products, orders, users, content, and reports
+- Delivery riders who handle assigned deliveries in the legacy PHP application
 
-1. Start WAMP and make sure MySQL is running. The app expects the existing database named
-   `tradehub`.
-2. **Only if the database has not been created yet**, import `sql/schema.sql`, then
-   `sql/seed.sql` using phpMyAdmin. `schema.sql` drops and recreates the TradeHub tables, so
-   do not re-import it into a database containing data you need.
-3. Open PowerShell in `C:\wamp64\www\FINAL_PROJECT_TRADEHUB\laravel-backend`, install
-   Composer dependencies if needed, and copy `.env.example` to `.env` only if `.env` does not
-   already exist:
+### Value Proposition and Revenue Model
+TradeHub brings product discovery, ordering, and delivery coordination together in one
+platform. The business model uses a configurable commission on sales as platform revenue.
+
+## System Components
+
+### User Portal
+- Home page and business information
+- Product catalog with search, filters, sorting, and pagination
+- Product details, live stock, cart, and checkout
+- Registration, login, profile and password management
+- Order history and order status
+
+### Major Modules
+- Product and category management
+- Online ordering and checkout
+- User and role management
+- Order and delivery tracking
+- Sales reports and commission monitoring
+
+### CMS and System Integration
+- WordPress headless CMS for storefront content and announcements
+- Gmail SMTP for order-confirmation email
+- Leaflet and OpenStreetMap for delivery maps in the legacy PHP application
+
+## Applications in This Repository
+
+### Existing PHP Application
+The procedural PHP application at the repository root runs under Apache in WAMP. It includes
+the marketplace storefront, administrator pages, order management, cash-on-delivery rider
+assignment, and rider GPS tracking.
+
+Open it at <http://localhost/FINAL_PROJECT_TRADEHUB/>.
+
+### Laravel Migration
+The Laravel 12 application is in `laravel-backend/` and runs separately from the root PHP
+application. It uses Blade and the existing `tradehub` database. The legacy PHP application
+remains available while the Laravel version is developed and verified; do not assume every
+legacy feature is present in the Laravel application.
+
+## Technology
+- PHP 8.2+
+- Laravel 12 and Blade for the migration application
+- MySQL 8 / MariaDB
+- WordPress headless CMS plugin
+- HTML, CSS, and JavaScript
+- PDO prepared statements in the legacy PHP application
+- PHPMailer / SMTP for email integration
+
+## Local Setup
+
+### Database and Legacy PHP Application (WAMP)
+1. Start WAMP (Apache and MySQL).
+2. If the `tradehub` database does not exist, import `sql/schema.sql` and then `sql/seed.sql`
+   using phpMyAdmin. **The schema drops and recreates tables. Do not import it into a database
+   containing data you need to keep.**
+3. Configure the database credentials in `config/config.php` or with the `TRADEHUB_DB_*`
+   environment variables. The default database name is `tradehub`.
+4. Open <http://localhost/FINAL_PROJECT_TRADEHUB/>.
+
+### Laravel Application
+1. Start WAMP and confirm the existing `tradehub` database is available.
+2. In PowerShell, install dependencies and create `.env` only if it does not already exist:
+
    ```powershell
    Set-Location 'C:\wamp64\www\FINAL_PROJECT_TRADEHUB\laravel-backend'
    composer install
    if (!(Test-Path .env)) { Copy-Item .env.example .env }
    ```
-4. Set `DB_DATABASE=tradehub`, `DB_USERNAME=root`, and your local MySQL password in
+
+3. Set `DB_DATABASE=tradehub`, `DB_USERNAME=root`, and your local MySQL password in
    `laravel-backend/.env`. Generate the application key once:
+
    ```powershell
-   C:\wamp64\bin\php\php8.3.28\php.exe artisan key:generate
-   ```
-5. Start Laravel and open <http://127.0.0.1:8000>:
-   ```powershell
-   C:\wamp64\bin\php\php8.3.28\php.exe artisan serve
+   php artisan key:generate
    ```
 
-The Laravel models map directly to the existing legacy tables, including `users.password_hash`.
-Do not run `php artisan migrate` against `tradehub`; Laravel’s default migrations are removed
-so they cannot conflict with the existing schema.
+4. Start the Laravel development server and open <http://127.0.0.1:8000>:
 
-The original procedural PHP version can still be opened at
-<http://localhost/FINAL_PROJECT_TRADEHUB/>. It is separate from the Laravel application.
+   ```powershell
+   php artisan serve
+   ```
 
-Demo accounts:
+The Laravel models use the existing TradeHub tables, including `users.password_hash`. Do not
+run `php artisan migrate` against `tradehub`; use the project's SQL schema instead.
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Administrator | admin@tradehub.test | Admin@123 |
-| Customer | customer@tradehub.test | Customer@123 |
+## WordPress Headless CMS
+WordPress can manage storefront content and announcements. The legacy PHP application also
+provides a TradeHub administration plugin for marketplace management.
 
-> Change these before deploying.
+1. Install WordPress locally, for example at `http://localhost/wordpress`.
+2. Copy the complete `wordpress-plugin/tradehub-headless/` folder, including `includes/`, into
+   `wordpress/wp-content/plugins/`, then activate **TradeHub Headless CMS**.
+3. Give the WordPress database account access to the `tradehub` database. For a local
+   installation, configure the `TRADEHUB_DB_HOST`, `TRADEHUB_DB_PORT`, `TRADEHUB_DB_NAME`,
+   `TRADEHUB_DB_USER`, and `TRADEHUB_DB_PASS` constants in `wp-config.php`.
+4. Set `TRADEHUB_WP_URL` to the WordPress URL without a trailing slash. The Laravel application
+   reads it from `laravel-backend/.env`; the legacy PHP application reads it from the Apache/PHP
+   environment.
+5. Verify the content endpoint at
+   <http://localhost/wordpress/wp-json/tradehub/v1/content>.
 
-## Features
-
-**Storefront**
-- Home page with business overview, service highlights, announcements, and featured products.
-- Product catalog with product-name and description search (`q`), category filter, min/max price filter,
-  in-stock filter, four sort orders, and pagination.
-- Product detail page with live stock and related items.
-- Session cart, quantity validation against stock, and a two-step checkout.
-- Order history with status badges, plus profile and password management.
-
-**Admin panel** (`/admin/`, Administrator role only)
-- Dashboard: gross sales, commission, order counts, low-stock alerts, recent transactions.
-- Products: create, edit, hide/show, delete (products with order history are deactivated).
-- Categories: create, edit, delete (blocked while products reference the category).
-- Users: view accounts, change role, activate/deactivate.
-- Content: configure the WordPress connection and open its content dashboard; when WordPress
-  is not configured, the legacy local content editor remains available.
-- Sales reports: date-range gross sales, commission, seller payout, average order,
-  sales by category, top products, and a transaction log.
-
-## WordPress headless CMS
-
-The storefront can use a separate WordPress installation to manage its site name, tagline,
-homepage copy, contact details, and announcements. Product listings, accounts, cart, checkout,
-and orders continue to run in TradeHub's PHP/MySQL application.
-
-1. Install WordPress locally (for example, at `http://localhost/wordpress`) and complete its
-   setup with a separate database.
-2. Copy `wordpress-plugin/tradehub-headless/tradehub-headless.php` into
-   `wordpress/wp-content/plugins/tradehub-headless/` and activate **TradeHub Headless CMS**
-   in the WordPress Plugins screen.
-3. For the Laravel app, set `TRADEHUB_WP_URL=http://localhost/wordpress` (without a trailing
-   slash) in `laravel-backend/.env`, then restart `artisan serve` if it is already running.
-   The legacy PHP app reads this setting from the environment available to Apache/PHP.
-4. In WordPress, open **Settings → TradeHub Content** to edit storefront copy. Create and
-   publish items under **Announcements**.
-5. Verify the public endpoint at
-   `http://localhost/wordpress/wp-json/tradehub/v1/content`, then open the TradeHub storefront.
-
-When WordPress is configured, the Laravel storefront reads its public CMS content from this
-endpoint, and the TradeHub admin content page links to the WordPress editor. If the endpoint is
-temporarily unavailable, Laravel logs the error and uses local content as a fallback.
-
-## Database
-
-Database `tradehub`, seven relational tables (five required plus local fallback content tables):
+## Database Design
+The relational MySQL schema is in `sql/schema.sql`. It defines eight tables:
 
 | Table | Purpose |
 | --- | --- |
-| `roles` | Administrator / Customer |
-| `users` | Accounts, bcrypt hashes, profile, status, role FK |
-| `categories` | Product classification |
-| `products` | Catalog, price, stock, availability, category FK |
-| `transactions` | Order lines; rows sharing a `reference` form one order |
-| `announcements` | CMS announcements |
-| `settings` | CMS site copy + commission rate |
+| `roles` | Administrator, Customer, and Delivery Rider roles |
+| `users` | User accounts, password hashes, profiles, and role relation |
+| `categories` | Product categories |
+| `products` | Product details, prices, stock, and category relation |
+| `transactions` | Order lines grouped by order reference |
+| `order_delivery_tracking` | Delivery address, rider assignment, and latest GPS location |
+| `announcements` | Local fallback announcements |
+| `settings` | Local storefront settings and commission rate |
 
-## Email integration (Gmail SMTP)
-
-For the Laravel app, configure SMTP in `laravel-backend/.env`, then restart `artisan serve`:
-
-```
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=your.address@gmail.com
-MAIL_PASSWORD=your-16-character-app-password
-MAIL_FROM_ADDRESS=your.address@gmail.com
-```
-
-Use a Google App Password, not your normal account password. Without SMTP credentials, checkout
-still completes and logs that the confirmation email was not sent.
+## Email Integration
+The legacy PHP checkout uses Gmail SMTP for order confirmations. Configure SMTP in
+`config/config.php` or with `TRADEHUB_SMTP_*` environment variables. Use a Google App Password,
+not your regular account password. The Laravel application uses its own mail settings in
+`laravel-backend/.env`.
 
 ## Security
+- Passwords are stored as bcrypt hashes.
+- Authentication and role-based authorization protect account and administration features.
+- Forms use CSRF protection and validate user input.
+- Database operations use prepared statements or Laravel's database layer.
+- Sessions are hardened, and login attempts are rate limited.
+- Order and delivery access is restricted to authorized users.
 
-- Laravel password hashing and session authentication work with the existing `password_hash`
-  column.
-- Blade output escaping, CSRF protection, validated inputs, and role-based admin middleware.
-- Checkout uses a database transaction and row locks to verify stock and record orders safely.
-- Customers can only access their own orders; login attempts are rate limited.
+## Demo Accounts
 
-## Notes
+| Role | Email | Password |
+| --- | --- | --- |
+| Administrator | `admin@tradehub.test` | `Admin@123` |
+| Customer | `customer@tradehub.test` | `Customer@123` |
 
-- Product images are stylised gradient tiles generated from the product name, so the app works
-  fully offline without external image hosting.
+Change demo credentials before deployment.

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: TradeHub Headless CMS
- * Description: Manages TradeHub storefront copy and announcements for the TradeHub REST API.
- * Version: 1.0.0
+ * Description: Provides TradeHub marketplace administration and headless storefront content.
+ * Version: 2.0.0
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Text Domain: tradehub-headless
@@ -33,7 +33,7 @@ function tradehub_headless_register_announcement_type(): void
         ],
         'public' => false,
         'show_ui' => true,
-        'show_in_menu' => true,
+        'show_in_menu' => false,
         'show_in_rest' => true,
         'supports' => ['title', 'editor'],
         'menu_icon' => 'dashicons-megaphone',
@@ -52,47 +52,6 @@ function tradehub_headless_register_settings(): void
     }
 }
 add_action('admin_init', 'tradehub_headless_register_settings');
-add_action('admin_menu', static function (): void {
-    add_options_page(
-        'TradeHub Content',
-        'TradeHub Content',
-        'manage_options',
-        'tradehub-content',
-        'tradehub_headless_render_settings'
-    );
-});
-
-function tradehub_headless_render_settings(): void
-{
-    if (!current_user_can('manage_options')) {
-        return;
-    }
-    ?>
-    <div class="wrap">
-      <h1>TradeHub Content</h1>
-      <p>Edit the public storefront content here.</p>
-      <p><a class="button button-secondary" href="<?= esc_url(admin_url('edit.php?post_type=th_announcement')) ?>">Manage Announcements</a></p>
-      <form method="post" action="options.php">
-        <?php settings_fields('tradehub_headless'); ?>
-        <table class="form-table" role="presentation">
-          <?php foreach (TRADEHUB_HEADLESS_SETTINGS as $key => $default): ?>
-            <tr>
-              <th scope="row"><label for="tradehub_<?= esc_attr($key) ?>"><?= esc_html(ucwords(str_replace('_', ' ', $key))) ?></label></th>
-              <td>
-                <?php if (in_array($key, ['hero_text', 'about_text'], true)): ?>
-                  <textarea class="large-text" rows="4" id="tradehub_<?= esc_attr($key) ?>" name="tradehub_<?= esc_attr($key) ?>"><?= esc_textarea(get_option('tradehub_' . $key, $default)) ?></textarea>
-                <?php else: ?>
-                  <input class="regular-text" type="<?= $key === 'contact_email' ? 'email' : 'text' ?>" id="tradehub_<?= esc_attr($key) ?>" name="tradehub_<?= esc_attr($key) ?>" value="<?= esc_attr(get_option('tradehub_' . $key, $default)) ?>">
-                <?php endif; ?>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-        </table>
-        <?php submit_button('Save TradeHub content'); ?>
-      </form>
-    </div>
-    <?php
-}
 
 function tradehub_headless_get_content(): WP_REST_Response
 {
@@ -129,3 +88,5 @@ add_action('rest_api_init', static function (): void {
         'permission_callback' => '__return_true',
     ]);
 });
+
+require_once __DIR__ . '/includes/admin.php';
