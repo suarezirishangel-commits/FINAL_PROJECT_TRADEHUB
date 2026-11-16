@@ -19,22 +19,22 @@ INSERT INTO categories (id, name, slug, description) VALUES
   (4, 'Beverages', 'beverages', 'Locally roasted coffee, juices, and herbal teas.'),
   (5, 'Home & Pantry', 'home-pantry', 'Preserved goods, sauces, and household staples.');
 
-INSERT INTO products (category_id, name, description, price, stock, is_active) VALUES
-  (1, 'Organic Kangkong Bundle', 'Crisp, pesticide-free water spinach harvested the same morning. Approx. 500g per bundle.', 45.00, 40, 1),
-  (1, 'Sweet Mangoes (1kg)', 'Naturally ripened carabao mangoes from Guimaras farms.', 180.00, 25, 1),
-  (1, 'Native Tomatoes (1kg)', 'Vine-ripened native tomatoes, great for salads and sauces.', 95.00, 30, 1),
-  (2, 'Pandesal Pack (12 pcs)', 'Soft, freshly baked classic Filipino bread rolls.', 90.00, 50, 1),
-  (2, 'Bibingka Special', 'Rice cake baked in banana leaf with salted egg and cheese.', 150.00, 15, 1),
-  (2, 'Whole Wheat Loaf', 'Slow-fermented whole wheat bread with no preservatives.', 130.00, 20, 1),
-  (3, 'Woven Abaca Tote Bag', 'Handwoven tote made by local artisan weavers in Quezon.', 450.00, 10, 1),
-  (3, 'Bamboo Utensil Set', 'Reusable fork, spoon, and straw carved from bamboo.', 220.00, 18, 1),
-  (3, 'Capiz Shell Coasters (set of 4)', 'Handcrafted coasters with a pearl-like finish.', 175.00, 0, 1),
-  (4, 'Barako Coffee Beans (250g)', 'Bold, full-bodied locally roasted Batangas barako coffee.', 320.00, 12, 1),
-  (4, 'Calamansi Juice (1L)', 'Freshly squeezed calamansi juice, lightly sweetened.', 140.00, 22, 1),
-  (4, 'Lemongrass Herbal Tea', 'Dried lemongrass infusion, caffeine free.', 110.00, 8, 1),
-  (5, 'Homemade Bagoong (250g)', 'Fermented shrimp paste cooked the traditional way.', 120.00, 26, 1),
-  (5, 'Coconut Jam (Sinamak) 300g', 'Rich coconut spread slow-cooked in small batches.', 165.00, 14, 1),
-  (5, 'Native Vinegar (500ml)', 'Sugarcane vinegar aged for six months.', 100.00, 0, 1);
+INSERT INTO products (category_id, name, description, image, price, stock, is_active) VALUES
+  (1, 'Organic Kangkong Bundle', 'Crisp, pesticide-free water spinach harvested the same morning. Approx. 500g per bundle.', 'assets/uploads/products/20261116-195705-cc0f19c6.png', 45.00, 40, 1),
+  (1, 'Sweet Mangoes (1kg)', 'Naturally ripened carabao mangoes from Guimaras farms.', 'assets/uploads/products/20261116-195803-a36db4bc.png', 180.00, 25, 1),
+  (1, 'Native Tomatoes (1kg)', 'Vine-ripened native tomatoes, great for salads and sauces.', 'assets/uploads/products/20261116-195634-2e9506f3.png', 95.00, 30, 1),
+  (2, 'Pandesal Pack (12 pcs)', 'Soft, freshly baked classic Filipino bread rolls.', 'assets/uploads/products/20261116-195723-64a182e4.png', 90.00, 50, 1),
+  (2, 'Bibingka Special', 'Rice cake baked in banana leaf with salted egg and cheese.', 'assets/uploads/products/20261116-195242-d145cb5f.png', 150.00, 15, 1),
+  (2, 'Whole Wheat Loaf', 'Slow-fermented whole wheat bread with no preservatives.', 'assets/uploads/products/20261116-195815-9b4a378b.png', 130.00, 20, 1),
+  (3, 'Woven Abaca Tote Bag', 'Handwoven tote made by local artisan weavers in Quezon.', 'assets/uploads/products/20261116-195829-76a026f8.png', 450.00, 10, 1),
+  (3, 'Bamboo Utensil Set', 'Reusable fork, spoon, and straw carved from bamboo.', 'assets/uploads/products/20261116-194106-9a57224b.png', 220.00, 18, 1),
+  (3, 'Capiz Shell Coasters (set of 4)', 'Handcrafted coasters with a pearl-like finish.', 'assets/uploads/products/20261116-195334-0c76f3fa.png', 175.00, 0, 1),
+  (4, 'Barako Coffee Beans (250g)', 'Bold, full-bodied locally roasted Batangas barako coffee.', 'assets/uploads/products/20261116-195215-bab33111.png', 320.00, 12, 1),
+  (4, 'Calamansi Juice (1L)', 'Freshly squeezed calamansi juice, lightly sweetened.', 'assets/uploads/products/20261116-195308-a0dc7de8.png', 140.00, 22, 1),
+  (4, 'Lemongrass Herbal Tea', 'Dried lemongrass infusion, caffeine free.', 'assets/uploads/products/20261116-195614-d30d7946.png', 110.00, 8, 1),
+  (5, 'Homemade Bagoong (250g)', 'Fermented shrimp paste cooked the traditional way.', 'assets/uploads/products/20261116-195543-c5df4108.png', 120.00, 26, 1),
+  (5, 'Coconut Jam (Sinamak) 300g', 'Rich coconut spread slow-cooked in small batches.', 'assets/uploads/products/20261116-195506-b2873ff2.png', 165.00, 14, 1),
+  (5, 'Native Vinegar (500ml)', 'Sugarcane vinegar aged for six months.', 'assets/uploads/products/20261116-195649-c54305ef.png', 100.00, 0, 1);
 
 INSERT INTO announcements (title, body, is_published) VALUES
   ('Free delivery within Metro Manila', 'Order a minimum of PHP 1,000 and get free same-day delivery within Metro Manila. Promo runs until the end of the month.', 1),

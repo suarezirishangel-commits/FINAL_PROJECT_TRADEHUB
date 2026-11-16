@@ -86,6 +86,8 @@ legacy feature is present in the Laravel application.
 2. If the `tradehub` database does not exist, import `sql/schema.sql` and then `sql/seed.sql`
    using phpMyAdmin. **The schema drops and recreates tables. Do not import it into a database
    containing data you need to keep.**
+   If the database and seed products already exist, run `sql/migrate_seed_product_images.sql`
+   once to link the bundled product photos without recreating the tables.
 3. Configure the database credentials in `config/config.php` or with the `TRADEHUB_DB_*`
    environment variables. The default database name is `tradehub`.
 4. Open <http://localhost/FINAL_PROJECT_TRADEHUB/>.
