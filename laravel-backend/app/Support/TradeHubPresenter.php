@@ -16,9 +16,20 @@ class TradeHubPresenter
             return null;
         }
 
-        return preg_match('~^https?://~i', $path)
-            ? $path
-            : asset(ltrim($path, '/'));
+        if (preg_match('~^https?://~i', $path)) {
+            return $path;
+        }
+
+        if (config('filesystems.disks.s3.bucket')) {
+            $url = rtrim((string) config('filesystems.disks.s3.url'), '/');
+            if ($url === '') {
+                throw new \RuntimeException('AWS_URL must point to the public product-image URL.');
+            }
+
+            return $url.'/'.ltrim($path, '/');
+        }
+
+        return asset(ltrim($path, '/'));
     }
 
     public static function productTone(int $id): int

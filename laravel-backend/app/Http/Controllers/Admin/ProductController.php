@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -68,12 +69,32 @@ class ProductController extends Controller
         $imagePath = $oldImage;
 
         if ($request->hasFile('image')) {
-            $directory = public_path('assets/uploads/products');
-            File::ensureDirectoryExists($directory);
             $extension = $request->file('image')->extension();
             $filename = now()->format('Ymd-His').'-'.bin2hex(random_bytes(4)).'.'.$extension;
-            $request->file('image')->move($directory, $filename);
             $imagePath = 'assets/uploads/products/'.$filename;
+
+            if (config('filesystems.disks.s3.bucket')) {
+                $stream = fopen($request->file('image')->getRealPath(), 'rb');
+                if ($stream === false) {
+                    throw new \RuntimeException('The uploaded product photo could not be opened.');
+                }
+                try {
+                    $stored = Storage::disk('s3')->put(
+                        $imagePath,
+                        $stream,
+                        ['ContentType' => $request->file('image')->getMimeType() ?? 'application/octet-stream']
+                    );
+                } finally {
+                    fclose($stream);
+                }
+                if (! $stored) {
+                    throw new \RuntimeException('The product photo could not be saved to shared storage.');
+                }
+            } else {
+                $directory = public_path('assets/uploads/products');
+                File::ensureDirectoryExists($directory);
+                $request->file('image')->move($directory, $filename);
+            }
         } elseif ($request->boolean('remove_image')) {
             $imagePath = null;
         }
@@ -131,9 +152,13 @@ class ProductController extends Controller
     private function deleteImage(?string $path): void
     {
         if ($path !== null && str_starts_with($path, 'assets/uploads/products/')) {
-            $file = public_path($path);
-            if (File::isFile($file)) {
-                File::delete($file);
+            if (config('filesystems.disks.s3.bucket')) {
+                Storage::disk('s3')->delete($path);
+            } else {
+                $file = public_path($path);
+                if (File::isFile($file)) {
+                    File::delete($file);
+                }
             }
         }
     }

@@ -6,11 +6,14 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\TradeHubPresenter;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class TradeHubFlowTest extends TestCase
@@ -20,6 +23,70 @@ class TradeHubFlowTest extends TestCase
         parent::setUp();
         config(['services.wordpress.url' => '']);
         $this->createTradeHubSchema();
+    }
+
+    public function test_product_images_use_the_shared_s3_public_url_when_configured(): void
+    {
+        config([
+            'filesystems.disks.s3.bucket' => 'tradehub-images',
+            'filesystems.disks.s3.url' => 'https://images.example.test',
+        ]);
+
+        $this->assertSame(
+            'https://images.example.test/assets/uploads/products/photo.png',
+            TradeHubPresenter::productImageUrl('assets/uploads/products/photo.png')
+        );
+        $this->assertSame(
+            'https://external.example.test/photo.png',
+            TradeHubPresenter::productImageUrl('https://external.example.test/photo.png')
+        );
+
+        config(['filesystems.disks.s3.bucket' => '']);
+        $this->assertSame(
+            asset('assets/uploads/products/photo.png'),
+            TradeHubPresenter::productImageUrl('assets/uploads/products/photo.png')
+        );
+    }
+
+    public function test_admin_product_image_upload_uses_the_shared_s3_disk(): void
+    {
+        $admin = $this->createUser(
+            Role::query()->create(['name' => 'Administrator']),
+            'Admin User',
+            'admin@example.test'
+        );
+        $seller = $this->createUser(
+            Role::query()->create(['name' => 'Seller']),
+            'Seller User',
+            'seller@example.test'
+        );
+        $category = $this->createCategory();
+        Storage::fake('s3');
+        config(['filesystems.disks.s3.bucket' => 'tradehub-images']);
+
+        $photo = new UploadedFile(
+            base_path('../assets/uploads/products/banana_chips.png'),
+            'banana_chips.png',
+            'image/png',
+            UPLOAD_ERR_OK,
+            true
+        );
+
+        $this->actingAs($admin)
+            ->post('/admin/products/save', [
+                'category_id' => $category->id,
+                'seller_id' => $seller->id,
+                'name' => 'Shared Storage Product',
+                'price' => 80,
+                'stock' => 5,
+                'is_active' => 1,
+                'image' => $photo,
+            ])
+            ->assertRedirect(route('admin.products'));
+
+        $product = Product::query()->where('name', 'Shared Storage Product')->firstOrFail();
+        $this->assertStringStartsWith('assets/uploads/products/', $product->image);
+        Storage::disk('s3')->assertExists($product->image);
     }
 
     public function test_storefront_renders_and_catalog_filters_products(): void
