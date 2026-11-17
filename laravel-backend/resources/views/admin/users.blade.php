@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="admin-topbar">
-  <div><h1>Users</h1><p>{{ $users->count() }} accounts. Administrators manage the marketplace; customers buy from it.</p></div>
+  <div><h1>Users</h1><p>{{ $users->count() }} accounts. Assign the Seller role before assigning sellers to products.</p></div>
 </div>
 <div class="table-wrap">
   <table class="data">

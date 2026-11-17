@@ -272,6 +272,9 @@ p { margin: 0 0 1rem; }
   padding: .7rem .8rem; border-radius: 10px; font-size: .9rem; cursor: pointer;
 }
 .payment-options input { margin-top: .2rem; }
+.paypal-option { border: 1px solid var(--line); border-radius: 10px; margin: .65rem 0 1rem; padding: .8rem; }
+.paypal-option h3 { font-size: .95rem; margin-bottom: .5rem; }
+.paypal-option #paypal-button-container { max-width: 420px; }
 .order-card { border: 1px solid var(--line); border-radius: var(--radius); background: #fff; margin-bottom: 1rem; overflow: hidden; }
 .order-head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .9rem 1.15rem; background: #f8faf9; border-bottom: 1px solid var(--line); font-size: .88rem; }
 .order-head strong { font-size: .92rem; }
@@ -295,6 +298,42 @@ p { margin: 0 0 1rem; }
 .track-timeline strong { font-size: .86rem; }
 .track-timeline small { display: block; color: var(--muted); font-size: .78rem; margin-top: .1rem; }
 .track-meta { display: flex; flex-wrap: wrap; gap: .3rem 1rem; font-size: .84rem; }
+.live-tracking { margin: 1rem 0; padding: 1rem; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.live-tracking h3 { font-size: .96rem; margin-bottom: .35rem; }
+.map-status { margin: 0 0 .55rem; font-size: .84rem; color: var(--muted); }
+.delivery-map { height: 280px; border: 1px solid var(--line); border-radius: 10px; background: #eef3f1; z-index: 0; }
+.delivery-map[hidden] { display: none !important; }
+.rider-gps-controls { min-width: min(100%, 300px); }
+.rider-gps-controls .hint { margin: .35rem 0 0; }
+.review-section, .order-reviews { margin-top: 1.5rem; }
+.review-entry, .review-form-card, .trade-offer-card { padding: 1rem; border: 1px solid var(--line); border-radius: 12px; background: #fff; margin-bottom: .75rem; }
+.review-heading { display: flex; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.review-heading span { color: var(--muted); font-size: .86rem; }
+.review-entry p { margin: .5rem 0 0; }
+.order-reviews { padding: 1rem; border-top: 1px solid var(--line); }
+.order-reviews h2 { font-size: 1.1rem; }
+.review-form-card h3 { font-size: 1rem; margin-bottom: .75rem; }
+.rating-form { display: grid; grid-template-columns: minmax(120px, .4fr) minmax(200px, 1fr) auto; gap: .6rem; align-items: end; margin: .75rem 0; }
+.rating-form .field { margin: 0; }
+.rating-form textarea { min-height: 2.7rem; }
+.trade-create, .trade-detail { padding: 1.25rem; }
+.trade-guide { margin-bottom: 1.5rem; }
+.trade-guide h2 { font-size: 1.1rem; margin-bottom: .6rem; }
+.trade-guide ol { margin: 0; padding-left: 1.3rem; color: var(--muted); }
+.trade-guide li + li { margin-top: .35rem; }
+.trade-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+.trade-card { padding: 1.1rem; }
+.trade-card h3 { margin: .45rem 0; }
+.trade-card p { margin: .4rem 0 .8rem; }
+.trade-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: 10px; background: #fff; margin-bottom: .6rem; }
+.trade-row p { margin: .25rem 0 0; }
+.trade-offer-form { max-width: 520px; padding-top: 1rem; }
+.trade-offer-form h2 { font-size: 1.15rem; }
+.trade-offer-card .row-actions { margin-top: .75rem; }
+@media (max-width: 680px) {
+  .rating-form { grid-template-columns: 1fr; }
+  .trade-row { align-items: flex-start; flex-direction: column; }
+}
 .order-manage { display: flex; gap: .75rem; align-items: flex-end; flex-wrap: wrap; padding: .9rem 1.15rem; border-top: 1px solid var(--line); background: #fbfdfc; }
 .order-manage .field { margin: 0; }
 .order-manage .field input { min-width: 210px; }

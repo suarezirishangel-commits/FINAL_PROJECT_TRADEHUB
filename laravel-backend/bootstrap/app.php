@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\EnsureActiveUser;
+use App\Http\Middleware\EnsureUserIsDeliveryRider;
 use App\Http\Middleware\EnsureUserIsAdministrator;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'admin' => EnsureUserIsAdministrator::class,
+            'delivery.rider' => EnsureUserIsDeliveryRider::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

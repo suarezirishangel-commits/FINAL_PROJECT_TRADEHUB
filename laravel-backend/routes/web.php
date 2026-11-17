@@ -10,12 +10,20 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\PayPalController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SellerController;
 use App\Http\Controllers\StorefrontController;
+use App\Http\Controllers\TradeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StorefrontController::class, 'home'])->name('home');
 Route::get('/products', [StorefrontController::class, 'products'])->name('products');
 Route::get('/products/{id}', [StorefrontController::class, 'showProduct'])->whereNumber('id')->name('product');
+Route::get('/sellers/{id}', [SellerController::class, 'show'])->whereNumber('id')->name('sellers.show');
+Route::get('/trades', [TradeController::class, 'index'])->name('trades.index');
+Route::get('/trades/{listing}', [TradeController::class, 'show'])->whereNumber('listing')->name('trades.show');
 
 Route::get('/cart', [CartController::class, 'index'])->name('cart');
 Route::post('/cart', [CartController::class, 'update'])->name('cart.update');
@@ -33,9 +41,29 @@ Route::middleware('auth')->group(function (): void {
     Route::put('/profile', [AccountController::class, 'updateProfile'])->name('profile.update');
     Route::put('/profile/password', [AccountController::class, 'updatePassword'])->name('profile.password');
     Route::get('/orders', [AccountController::class, 'orders'])->name('orders');
+    Route::post('/orders/reviews', [ReviewController::class, 'store'])->name('orders.reviews.store');
+    Route::get('/orders/delivery-location', [AccountController::class, 'deliveryLocation'])->name('orders.delivery-location');
     Route::get('/checkout', [AccountController::class, 'checkoutForm'])->name('checkout');
     Route::post('/checkout', [AccountController::class, 'placeOrder'])->name('checkout.place');
+    Route::post('/checkout/paypal/order', [PayPalController::class, 'createOrder'])->middleware('throttle:10,1')->name('checkout.paypal.order');
+    Route::post('/checkout/paypal/capture', [PayPalController::class, 'captureOrder'])->middleware('throttle:10,1')->name('checkout.paypal.capture');
+    Route::post('/trades', [TradeController::class, 'store'])->name('trades.store');
+    Route::post('/trades/{listing}/offers', [TradeController::class, 'offer'])->whereNumber('listing')->name('trades.offers.store');
+    Route::post('/trades/{listing}/cancel', [TradeController::class, 'cancelListing'])->whereNumber('listing')->name('trades.cancel');
+    Route::post('/trade-offers/{offer}/accept', [TradeController::class, 'accept'])->whereNumber('offer')->name('trade-offers.accept');
+    Route::post('/trade-offers/{offer}/decline', [TradeController::class, 'decline'])->whereNumber('offer')->name('trade-offers.decline');
+    Route::post('/trade-offers/{offer}/cancel', [TradeController::class, 'cancelOffer'])->whereNumber('offer')->name('trade-offers.cancel');
+    Route::post('/trade-offers/{offer}/confirm', [TradeController::class, 'confirmHandoff'])->whereNumber('offer')->name('trade-offers.confirm');
 });
+
+Route::prefix('delivery')
+    ->name('delivery.')
+    ->middleware(['auth', 'delivery.rider'])
+    ->group(function (): void {
+        Route::get('/', [DeliveryController::class, 'index'])->name('orders');
+        Route::post('/orders', [DeliveryController::class, 'update'])->name('orders.update');
+        Route::post('/location', [DeliveryController::class, 'updateLocation'])->middleware('throttle:12,1')->name('location');
+    });
 
 Route::prefix('admin')
     ->name('admin.')

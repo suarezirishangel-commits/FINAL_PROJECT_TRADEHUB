@@ -15,6 +15,7 @@ class Transaction extends Model
         'reference',
         'user_id',
         'product_id',
+        'seller_id',
         'product_name',
         'quantity',
         'unit_price',
@@ -32,6 +33,7 @@ class Transaction extends Model
         return [
             'user_id' => 'integer',
             'product_id' => 'integer',
+            'seller_id' => 'integer',
             'quantity' => 'integer',
             'unit_price' => 'decimal:2',
             'total_amount' => 'decimal:2',
@@ -50,5 +52,10 @@ class Transaction extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'seller_id');
     }
 }

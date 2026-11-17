@@ -44,10 +44,10 @@ foreach ($stmt->fetchAll() as $row) {
     }
 }
 
-$hasCodOrders = false;
+$hasLiveOrders = false;
 foreach ($orders as $order) {
-    if ($order['payment_method'] === 'cod') {
-        $hasCodOrders = true;
+    if ($order['rider_id'] !== null) {
+        $hasLiveOrders = true;
         break;
     }
 }
@@ -55,7 +55,7 @@ foreach ($orders as $order) {
 $highlight = (string) ($_GET['ref'] ?? '');
 $pageTitle = 'My orders';
 $active    = 'orders';
-$includeLeaflet = $hasCodOrders;
+$includeLeaflet = $hasLiveOrders;
 require __DIR__ . '/includes/header.php';
 ?>
 <div class="container">
@@ -111,10 +111,10 @@ require __DIR__ . '/includes/header.php';
               </li>
             <?php endforeach; ?>
           </ol>
-          <?php if ($order['payment_method'] === 'cod'): ?>
-            <section class="live-tracking" aria-label="Live COD delivery tracking">
-              <h3>Cash on delivery · Rider map</h3>
-              <p class="hint">Pay the rider when the order arrives. Live location is shared only while the rider is on delivery.</p>
+          <?php if ($order['rider_id'] !== null): ?>
+            <section class="live-tracking" aria-label="Live delivery tracking">
+              <h3>Track delivery</h3>
+              <p class="hint">Live location is shared while the rider is on delivery.</p>
               <div class="order-map" data-order-map
                    data-reference="<?= e($order['reference']) ?>"
                    data-endpoint="<?= e(url('order-location.php')) ?>">
@@ -139,7 +139,7 @@ require __DIR__ . '/includes/header.php';
     <?php endforeach; ?>
   </div>
 </div>
-  <?php if ($hasCodOrders): ?>
+  <?php if ($hasLiveOrders): ?>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <script src="<?= e(url('assets/js/order-map.js')) ?>?v=<?= (int) filemtime(__DIR__ . '/assets/js/order-map.js') ?>" defer></script>
   <?php endif; ?>

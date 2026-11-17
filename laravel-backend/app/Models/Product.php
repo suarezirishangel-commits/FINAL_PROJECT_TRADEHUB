@@ -14,6 +14,7 @@ class Product extends Model
 
     protected $fillable = [
         'category_id',
+        'seller_id',
         'name',
         'description',
         'image',
@@ -26,6 +27,7 @@ class Product extends Model
     {
         return [
             'category_id' => 'integer',
+            'seller_id' => 'integer',
             'price' => 'decimal:2',
             'stock' => 'integer',
             'is_active' => 'boolean',
@@ -38,8 +40,18 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
+
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
     }
 }

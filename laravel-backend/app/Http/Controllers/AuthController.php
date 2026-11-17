@@ -50,11 +50,14 @@ class AuthController extends Controller
 
         RateLimiter::clear($key);
         $request->session()->regenerate();
+        $user = $request->user();
 
         return redirect()->intended(
-            $request->user()->isAdministrator()
-                ? route('admin.dashboard')
-                : route('home')
+            match (true) {
+                $user->isAdministrator() => route('admin.dashboard'),
+                $user->isDeliveryRider() => route('delivery.orders'),
+                default => route('home'),
+            }
         )->with('success', 'Welcome back!');
     }
 

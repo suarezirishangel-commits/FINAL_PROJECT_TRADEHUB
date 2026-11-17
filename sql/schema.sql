@@ -6,6 +6,10 @@ CREATE DATABASE IF NOT EXISTS tradehub
 USE tradehub;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS trade_offers;
+DROP TABLE IF EXISTS trade_listings;
+DROP TABLE IF EXISTS seller_reviews;
+DROP TABLE IF EXISTS product_reviews;
 DROP TABLE IF EXISTS order_delivery_tracking;
 DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS announcements;
@@ -51,6 +55,7 @@ CREATE TABLE categories (
 CREATE TABLE products (
   id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
   category_id INT UNSIGNED NOT NULL,
+  seller_id   INT UNSIGNED DEFAULT NULL,
   name        VARCHAR(150) NOT NULL,
   description TEXT DEFAULT NULL,
   image       VARCHAR(255) DEFAULT NULL,
@@ -60,9 +65,11 @@ CREATE TABLE products (
   created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_products_category (category_id),
+  KEY idx_products_seller (seller_id),
   KEY idx_products_price (price),
   FULLTEXT KEY ft_products_search (name, description),
-  CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories (id)
+  CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories (id),
+  CONSTRAINT fk_products_seller FOREIGN KEY (seller_id) REFERENCES users (id)
 ) ENGINE=InnoDB;
 
 -- One row per purchased item; rows sharing a reference form one order.
@@ -71,6 +78,7 @@ CREATE TABLE transactions (
   reference     VARCHAR(20) NOT NULL,
   user_id       INT UNSIGNED NOT NULL,
   product_id    INT UNSIGNED NOT NULL,
+  seller_id     INT UNSIGNED DEFAULT NULL,
   product_name  VARCHAR(150) NOT NULL,
   quantity      INT NOT NULL,
   unit_price    DECIMAL(10,2) NOT NULL,
@@ -84,10 +92,94 @@ CREATE TABLE transactions (
   created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_transactions_user (user_id),
+  KEY idx_transactions_seller (seller_id),
   KEY idx_transactions_reference (reference),
   KEY idx_transactions_created (created_at),
   CONSTRAINT fk_transactions_user FOREIGN KEY (user_id) REFERENCES users (id),
-  CONSTRAINT fk_transactions_product FOREIGN KEY (product_id) REFERENCES products (id)
+  CONSTRAINT fk_transactions_product FOREIGN KEY (product_id) REFERENCES products (id),
+  CONSTRAINT fk_transactions_seller FOREIGN KEY (seller_id) REFERENCES users (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE paypal_payments (
+  paypal_order_id VARCHAR(64) NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  reference VARCHAR(20) DEFAULT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'PHP',
+  status VARCHAR(24) NOT NULL DEFAULT 'created',
+  capture_id VARCHAR(64) DEFAULT NULL,
+  checkout_data JSON NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (paypal_order_id),
+  KEY idx_paypal_payments_user (user_id),
+  KEY idx_paypal_payments_status (status),
+  CONSTRAINT fk_paypal_payments_user FOREIGN KEY (user_id) REFERENCES users (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE product_reviews (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  product_id  INT UNSIGNED NOT NULL,
+  reviewer_id INT UNSIGNED NOT NULL,
+  reference   VARCHAR(20) NOT NULL,
+  rating      TINYINT UNSIGNED NOT NULL,
+  comment     TEXT DEFAULT NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_product_review_order (product_id, reviewer_id, reference),
+  KEY idx_product_reviews_rating (product_id, rating),
+  CONSTRAINT fk_product_reviews_product FOREIGN KEY (product_id) REFERENCES products (id),
+  CONSTRAINT fk_product_reviews_reviewer FOREIGN KEY (reviewer_id) REFERENCES users (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE seller_reviews (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  seller_id   INT UNSIGNED NOT NULL,
+  reviewer_id INT UNSIGNED NOT NULL,
+  reference   VARCHAR(20) NOT NULL,
+  rating      TINYINT UNSIGNED NOT NULL,
+  comment     TEXT DEFAULT NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_seller_review_order (seller_id, reviewer_id, reference),
+  KEY idx_seller_reviews_rating (seller_id, rating),
+  CONSTRAINT fk_seller_reviews_seller FOREIGN KEY (seller_id) REFERENCES users (id),
+  CONSTRAINT fk_seller_reviews_reviewer FOREIGN KEY (reviewer_id) REFERENCES users (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE trade_listings (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id     INT UNSIGNED NOT NULL,
+  title       VARCHAR(120) NOT NULL,
+  description TEXT NOT NULL,
+  wanted_item VARCHAR(255) NOT NULL,
+  status      ENUM('open','in_trade','completed','cancelled') NOT NULL DEFAULT 'open',
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_trade_listings_status_created (status, created_at),
+  KEY idx_trade_listings_user (user_id),
+  CONSTRAINT fk_trade_listings_user FOREIGN KEY (user_id) REFERENCES users (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE trade_offers (
+  id                     INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  listing_id             INT UNSIGNED NOT NULL,
+  requester_id           INT UNSIGNED NOT NULL,
+  offered_item           VARCHAR(120) NOT NULL,
+  message                VARCHAR(500) DEFAULT NULL,
+  status                 ENUM('pending','accepted','declined','cancelled','completed') NOT NULL DEFAULT 'pending',
+  owner_confirmed_at     DATETIME DEFAULT NULL,
+  requester_confirmed_at DATETIME DEFAULT NULL,
+  created_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_trade_offers_listing_status (listing_id, status),
+  KEY idx_trade_offers_requester (requester_id),
+  CONSTRAINT fk_trade_offers_listing FOREIGN KEY (listing_id) REFERENCES trade_listings (id),
+  CONSTRAINT fk_trade_offers_requester FOREIGN KEY (requester_id) REFERENCES users (id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE order_delivery_tracking (

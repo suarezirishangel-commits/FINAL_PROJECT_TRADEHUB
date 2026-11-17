@@ -58,6 +58,12 @@ class TradeHubPresenter
 
     public static function orderStatusRank(string $status): int
     {
-        return ['cancelled' => 0, 'pending' => 1, 'paid' => 2, 'completed' => 3][$status] ?? 0;
+        return [
+            'cancelled' => 0,
+            'pending' => 1,
+            'paid' => 2,
+            'out_for_delivery' => 3,
+            'completed' => 4,
+        ][$status] ?? 0;
     }
 }

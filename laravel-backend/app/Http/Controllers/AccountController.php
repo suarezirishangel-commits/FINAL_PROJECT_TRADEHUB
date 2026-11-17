@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductReview;
+use App\Models\SellerReview;
 use App\Models\Transaction;
+use App\Services\PayPalGateway;
 use App\Support\OrderConfirmationSender;
 use App\Support\TradeHubPresenter;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
@@ -64,9 +69,37 @@ class AccountController extends Controller
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();
+        $deliveries = DB::table('order_delivery_tracking')
+            ->leftJoin('users as riders', 'riders.id', '=', 'order_delivery_tracking.rider_id')
+            ->whereIn('order_delivery_tracking.reference', $rows->pluck('reference')->unique())
+            ->select([
+                'order_delivery_tracking.reference',
+                'order_delivery_tracking.rider_id',
+                'order_delivery_tracking.delivery_started_at',
+                'order_delivery_tracking.latitude',
+                'order_delivery_tracking.longitude',
+                'order_delivery_tracking.location_updated_at',
+                'riders.full_name as rider_name',
+            ])
+            ->get()
+            ->keyBy('reference');
+        $references = $rows->pluck('reference')->unique();
+        $productReviews = ProductReview::query()
+            ->where('reviewer_id', $request->user()->id)
+            ->whereIn('reference', $references)
+            ->get()
+            ->groupBy('reference')
+            ->map(fn ($reviews) => $reviews->keyBy('product_id'));
+        $sellerReviews = SellerReview::query()
+            ->where('reviewer_id', $request->user()->id)
+            ->whereIn('reference', $references)
+            ->get()
+            ->groupBy('reference')
+            ->map(fn ($reviews) => $reviews->keyBy('seller_id'));
 
-        $orders = $rows->groupBy('reference')->map(function ($items, string $reference): array {
+        $orders = $rows->groupBy('reference')->map(function ($items, string $reference) use ($deliveries, $productReviews, $sellerReviews): array {
             $first = $items->first();
+            $delivery = $deliveries->get($reference);
             $status = $items->sortBy(fn (Transaction $item) => TradeHubPresenter::orderStatusRank($item->status))->first()->status;
 
             return [
@@ -78,6 +111,18 @@ class AccountController extends Controller
                 'paid_at' => $first->paid_at,
                 'completed_at' => $first->completed_at,
                 'cancelled_at' => $first->cancelled_at,
+                'delivery_started_at' => $delivery?->delivery_started_at
+                    ? Carbon::parse($delivery->delivery_started_at)
+                    : null,
+                'rider_name' => $delivery?->rider_name,
+                'rider_assigned' => $delivery?->rider_id !== null,
+                'latitude' => $delivery?->latitude === null ? null : (float) $delivery->latitude,
+                'longitude' => $delivery?->longitude === null ? null : (float) $delivery->longitude,
+                'location_updated_at' => $delivery?->location_updated_at
+                    ? Carbon::parse($delivery->location_updated_at)
+                    : null,
+                'product_reviews' => $productReviews->get($reference, collect()),
+                'seller_reviews' => $sellerReviews->get($reference, collect()),
                 'total' => $items->sum('total_amount'),
                 'items' => $items,
             ];
@@ -89,7 +134,44 @@ class AccountController extends Controller
         ]);
     }
 
-    public function checkoutForm(Request $request): View|RedirectResponse
+    public function deliveryLocation(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'reference' => ['required', 'string', 'max:20'],
+        ]);
+        $order = DB::table('transactions as t')
+            ->leftJoin('order_delivery_tracking as d', 'd.reference', '=', 't.reference')
+            ->where('t.reference', $data['reference'])
+            ->where('t.user_id', $request->user()->id)
+            ->orderBy('t.id')
+            ->first([
+                't.status',
+                'd.rider_id',
+                'd.latitude',
+                'd.longitude',
+                'd.location_updated_at',
+            ]);
+
+        if (! $order) {
+            return response()->json(['error' => 'Order not found.'], 404);
+        }
+
+        return response()->json([
+            'status' => $order->status,
+            'rider_assigned' => $order->rider_id !== null,
+            'latitude' => $order->status === 'cancelled' || $order->latitude === null
+                ? null
+                : (float) $order->latitude,
+            'longitude' => $order->status === 'cancelled' || $order->longitude === null
+                ? null
+                : (float) $order->longitude,
+            'location_updated_at' => $order->location_updated_at
+                ? Carbon::parse($order->location_updated_at)->toIso8601String()
+                : null,
+        ])->header('Cache-Control', 'no-store, private');
+    }
+
+    public function checkoutForm(Request $request, PayPalGateway $paypal): View|RedirectResponse
     {
         $cart = $request->session()->get('cart', []);
         if (! $cart) {
@@ -116,6 +198,8 @@ class AccountController extends Controller
             'items' => $items,
             'total' => $items->sum('line_total'),
             'user' => $request->user(),
+            'paypalClientId' => $paypal->isConfigured() ? $paypal->clientId() : null,
+            'paypalCurrency' => $paypal->currency(),
         ]);
     }
 
@@ -125,7 +209,7 @@ class AccountController extends Controller
             'full_name' => ['required', 'string', 'min:3', 'max:120'],
             'phone' => ['required', 'string', 'max:30', 'regex:/^[0-9+\s()-]{7,20}$/'],
             'address' => ['required', 'string', 'min:10', 'max:255'],
-            'payment_method' => ['required', 'in:cod,gcash'],
+            'payment_method' => ['required', 'in:cod'],
         ], ['phone.regex' => 'Please enter a valid contact number.']);
 
         $cart = $request->session()->get('cart', []);
@@ -173,6 +257,7 @@ class AccountController extends Controller
                         'reference' => $reference,
                         'user_id' => $user->id,
                         'product_id' => $product->id,
+                        'seller_id' => $product->seller_id,
                         'product_name' => $product->name,
                         'quantity' => $quantity,
                         'unit_price' => $product->price,
@@ -189,6 +274,10 @@ class AccountController extends Controller
                     throw new RuntimeException('The items in your cart are no longer available.');
                 }
 
+                DB::table('order_delivery_tracking')->insert([
+                    'reference' => $reference,
+                    'delivery_address' => $data['address'],
+                ]);
             });
         } catch (RuntimeException $error) {
             return redirect()->route('checkout')->withErrors(['cart' => $error->getMessage()]);

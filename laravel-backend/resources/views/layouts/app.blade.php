@@ -6,6 +6,9 @@
   <title>{{ $pageTitle ?? 'TradeHub' }} · {{ $siteContent->setting('site_name', 'TradeHub') }}</title>
   <meta name="description" content="{{ $siteContent->setting('tagline') }}">
   <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+  @if (request()->routeIs('orders', 'delivery.orders'))
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  @endif
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -21,10 +24,13 @@
     <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
       <a href="{{ route('home') }}" class="{{ ($active ?? '') === 'home' ? 'is-active' : '' }}">Home</a>
       <a href="{{ route('products') }}" class="{{ ($active ?? '') === 'products' ? 'is-active' : '' }}">Products</a>
+      <a href="{{ route('trades.index') }}" class="{{ ($active ?? '') === 'trades' ? 'is-active' : '' }}">Trades</a>
       @auth
         <a href="{{ route('orders') }}" class="{{ ($active ?? '') === 'orders' ? 'is-active' : '' }}">My orders</a>
         @if (auth()->user()->isAdministrator())
           <a href="{{ route('admin.dashboard') }}" class="nav-admin">Admin panel</a>
+        @elseif (auth()->user()->isDeliveryRider())
+          <a href="{{ route('delivery.orders') }}" class="{{ ($active ?? '') === 'delivery' ? 'is-active' : '' }}">Delivery dashboard</a>
         @endif
       @endauth
       <div class="nav-actions">
@@ -92,6 +98,10 @@
     <span>Commission-based marketplace</span>
   </div>
 </footer>
+@if (request()->routeIs('orders', 'delivery.orders'))
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="{{ asset('assets/js/delivery-map.js') }}" defer></script>
+@endif
 <script src="{{ asset('assets/js/main.js') }}" defer></script>
 </body>
 </html>

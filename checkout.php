@@ -14,7 +14,8 @@ if (!$ids) {
 
 $errors  = [];
 $payment = post('payment_method', 'cod');
-$allowedPayments = ['cod', 'gcash'];
+$allowedPayments = ['cod'];
+$paypalConfigured = paypal_is_configured();
 
 // Pre-fill from the customer profile.
 $form = [
@@ -166,10 +167,16 @@ require __DIR__ . '/includes/header.php';
           <input type="radio" name="payment_method" value="cod" <?= $payment === 'cod' ? 'checked' : '' ?>>
           <span><strong>Cash on delivery</strong><br><small class="hint">Pay the rider when your order arrives.</small></span>
         </label>
-        <label>
-          <input type="radio" name="payment_method" value="gcash" <?= $payment === 'gcash' ? 'checked' : '' ?>>
-          <span><strong>GCash</strong><br><small class="hint">Send payment to the seller's GCash number after checkout.</small></span>
-        </label>
+      </div>
+      <div class="paypal-option">
+        <h3>Or pay online with PayPal</h3>
+        <?php if ($paypalConfigured): ?>
+          <p class="hint">Your order will be placed after PayPal confirms the payment.</p>
+          <div id="paypal-button-container"></div>
+          <p id="paypal-status" class="hint" role="status" aria-live="polite"></p>
+        <?php else: ?>
+          <p class="hint">PayPal is not configured yet. Cash on delivery is available.</p>
+        <?php endif; ?>
       </div>
 
       <button class="btn btn-primary btn-block" type="submit">Place order</button>
@@ -200,4 +207,56 @@ require __DIR__ . '/includes/header.php';
     </aside>
   </div>
 </div>
+<?php if ($paypalConfigured): ?>
+  <script src="<?= e('https://www.paypal.com/sdk/js?client-id=' . config()['paypal']['client_id'] . '&currency=' . config()['paypal']['currency'] . '&intent=capture') ?>"></script>
+  <script>
+    (() => {
+      const form = document.querySelector('form[action="<?= e(url('checkout.php')) ?>"]');
+      const status = document.getElementById('paypal-status');
+      const fields = ['full_name', 'phone', 'address'];
+
+      async function postForm(url, payload) {
+        const body = new URLSearchParams({ csrf_token: form.elements.csrf_token.value, ...payload });
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+          body
+        });
+        let result;
+        try {
+          result = await response.json();
+        } catch {
+          throw new Error('The server could not complete this PayPal request. Please reload and try again.');
+        }
+        if (!response.ok) {
+          throw new Error(result.message || 'PayPal could not complete this request.');
+        }
+        return result;
+      }
+
+      paypal.Buttons({
+        createOrder: async () => {
+          if (!form.reportValidity()) {
+            throw new Error('Please complete your delivery details first.');
+          }
+          status.textContent = 'Connecting to PayPal…';
+          const payload = Object.fromEntries(fields.map((name) => [name, form.elements[name].value]));
+          const order = await postForm('<?= e(url('paypal-create-order.php')) ?>', payload);
+          return order.id;
+        },
+        onApprove: async (data) => {
+          status.textContent = 'Confirming your payment…';
+          const result = await postForm('<?= e(url('paypal-capture-order.php')) ?>', { order_id: data.orderID });
+          window.location.assign(result.redirect_url);
+        },
+        onCancel: () => {
+          status.textContent = 'PayPal checkout was cancelled. Your order has not been placed.';
+        },
+        onError: (error) => {
+          status.textContent = error.message || 'PayPal is unavailable. Please try again or choose cash on delivery.';
+        }
+      }).render('#paypal-button-container');
+    })();
+  </script>
+<?php endif; ?>
 <?php require __DIR__ . '/includes/footer.php'; ?>

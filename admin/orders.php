@@ -40,9 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('error', 'Could not update that order.');
         } elseif (mb_strlen($tracking) > 64) {
             flash('error', 'Tracking number must be 64 characters or fewer.');
-        } elseif (!$validRider || ($riderId !== null && $orderInfo['payment_method'] !== 'cod')) {
-            flash('error', 'Choose an active delivery rider for a COD order.');
-        } elseif ($status === 'out_for_delivery' && $orderInfo['payment_method'] === 'cod' && $riderId === null) {
+        } elseif (!$validRider) {
+            flash('error', 'Choose an active delivery rider.');
+        } elseif ($status === 'out_for_delivery' && $riderId === null) {
             flash('error', 'Assign a delivery rider before sending the order out.');
         } elseif ($status === 'completed' && $orderInfo['payment_method'] === 'cod' && $orderInfo['paid_at'] === null) {
             flash('error', 'Confirm that the rider collected the COD payment before completing the order.');
@@ -204,8 +204,8 @@ require __DIR__ . '/_header.php';
                placeholder="e.g. J&T 0012345678">
       </div>
       <div class="field">
-        <label for="rider-<?= e($order['reference']) ?>">Delivery rider (COD)</label>
-        <select id="rider-<?= e($order['reference']) ?>" name="rider_id" <?= $order['payment_method'] !== 'cod' ? 'disabled' : '' ?>>
+        <label for="rider-<?= e($order['reference']) ?>">Delivery rider</label>
+        <select id="rider-<?= e($order['reference']) ?>" name="rider_id">
           <option value="">Unassigned</option>
           <?php foreach ($deliveryRiders as $rider): ?>
             <option value="<?= (int) $rider['id'] ?>" <?= (int) $order['rider_id'] === (int) $rider['id'] ? 'selected' : '' ?>>

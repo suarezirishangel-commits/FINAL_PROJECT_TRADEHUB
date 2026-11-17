@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductReview;
+use App\Models\SellerReview;
 use App\Models\Transaction;
 use App\Support\TradeHubContent;
 use Illuminate\Database\Eloquent\Builder;
@@ -103,7 +105,7 @@ class StorefrontController extends Controller
     public function showProduct(int $id): View
     {
         $product = Product::query()
-            ->with('category')
+            ->with(['category', 'seller'])
             ->where('is_active', true)
             ->findOrFail($id);
 
@@ -117,6 +119,32 @@ class StorefrontController extends Controller
             ->limit(3)
             ->get();
 
-        return view('storefront.product', compact('product', 'related'));
+        $productReviews = ProductReview::query()
+            ->with('reviewer')
+            ->where('product_id', $product->id)
+            ->orderByDesc('created_at')
+            ->paginate(5);
+        $productRatingAverage = ProductReview::query()
+            ->where('product_id', $product->id)
+            ->avg('rating');
+        $productRatingCount = ProductReview::query()
+            ->where('product_id', $product->id)
+            ->count();
+        $sellerRatingAverage = $product->seller_id
+            ? SellerReview::query()->where('seller_id', $product->seller_id)->avg('rating')
+            : null;
+        $sellerRatingCount = $product->seller_id
+            ? SellerReview::query()->where('seller_id', $product->seller_id)->count()
+            : 0;
+
+        return view('storefront.product', compact(
+            'product',
+            'related',
+            'productReviews',
+            'productRatingAverage',
+            'productRatingCount',
+            'sellerRatingAverage',
+            'sellerRatingCount',
+        ));
     }
 }

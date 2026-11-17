@@ -33,6 +33,30 @@
         </span></li>
         <li><span>Category</span><span>{{ $product->category->name }}</span></li>
         <li><span>Listed</span><span>{{ $product->created_at?->format('M j, Y') }}</span></li>
+        <li>
+          <span>Product rating</span>
+          <span>
+            @if ($productRatingAverage !== null)
+              {{ number_format((float) $productRatingAverage, 1) }} / 5 ({{ $productRatingCount }} {{ \Illuminate\Support\Str::plural('review', $productRatingCount) }})
+            @else
+              No ratings yet
+            @endif
+          </span>
+        </li>
+        @if ($product->seller)
+          <li>
+            <span>Seller</span>
+            <span>
+              <a href="{{ route('sellers.show', $product->seller->id) }}">{{ $product->seller->full_name }}</a>
+              ·
+              @if ($sellerRatingAverage !== null)
+                {{ number_format((float) $sellerRatingAverage, 1) }} / 5 ({{ $sellerRatingCount }} {{ \Illuminate\Support\Str::plural('rating', $sellerRatingCount) }})
+              @else
+                No seller ratings yet
+              @endif
+            </span>
+          </li>
+        @endif
       </ul>
       @if ($product->stock > 0)
         <form class="buy-form" method="post" action="{{ route('cart.update') }}">
@@ -51,12 +75,35 @@
       @endif
     </div>
   </div>
+  <section class="section review-section">
+    <div class="section-head">
+      <div>
+        <div class="kicker">Customer feedback</div>
+        <h2>Product ratings</h2>
+      </div>
+      <strong>{{ $productRatingAverage !== null ? number_format((float) $productRatingAverage, 1).' / 5' : 'Not rated yet' }}</strong>
+    </div>
+    @forelse ($productReviews as $review)
+      <article class="review-entry">
+        <div class="review-heading">
+          <strong>{{ $review->reviewer->full_name }}</strong>
+          <span>{{ $review->rating }} / 5 · {{ $review->created_at?->format('M j, Y') }}</span>
+        </div>
+        @if ($review->comment)
+          <p>{{ $review->comment }}</p>
+        @endif
+      </article>
+    @empty
+      <p class="hint">No customer ratings yet.</p>
+    @endforelse
+    {{ $productReviews->links() }}
+  </section>
   @if ($related->isNotEmpty())
     <section class="section" style="padding-top:0">
       <div class="section-head"><div><div class="kicker">More in this category</div><h2>You may also like</h2></div></div>
       <div class="product-grid">
-        @foreach ($related as $product)
-          @include('partials.product-card', ['product' => $product])
+        @foreach ($related as $relatedProduct)
+          @include('partials.product-card', ['product' => $relatedProduct])
         @endforeach
       </div>
     </section>

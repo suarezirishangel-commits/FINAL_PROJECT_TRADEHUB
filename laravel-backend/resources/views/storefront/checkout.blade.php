@@ -29,10 +29,16 @@
           <input type="radio" name="payment_method" value="cod" @checked(old('payment_method', 'cod') === 'cod')>
           <span><strong>Cash on delivery</strong><br><small class="hint">Pay the rider when your order arrives.</small></span>
         </label>
-        <label>
-          <input type="radio" name="payment_method" value="gcash" @checked(old('payment_method') === 'gcash')>
-          <span><strong>GCash</strong><br><small class="hint">Send payment to the seller's GCash number after checkout.</small></span>
-        </label>
+      </div>
+      <div class="paypal-option">
+        <h3>Or pay online with PayPal</h3>
+        @if ($paypalClientId)
+          <p class="hint">Confirm the payment with PayPal. Your order will be placed after payment succeeds.</p>
+          <div id="paypal-button-container"></div>
+          <p id="paypal-status" class="hint" role="status" aria-live="polite"></p>
+        @else
+          <p class="hint">PayPal is not configured yet. Cash on delivery is available.</p>
+        @endif
       </div>
       <button class="btn btn-primary btn-block" type="submit">Place order</button>
       <a class="btn btn-ghost btn-block" href="{{ route('cart') }}" style="margin-top:.5rem">Back to cart</a>
@@ -50,4 +56,55 @@
     </aside>
   </div>
 </div>
+@if ($paypalClientId)
+  <script src="https://www.paypal.com/sdk/js?client-id={{ urlencode($paypalClientId) }}&currency={{ urlencode($paypalCurrency) }}&intent=capture"></script>
+  <script>
+    (() => {
+      const form = document.querySelector('form[action="{{ route('checkout.place') }}"]');
+      const status = document.getElementById('paypal-status');
+      const token = form.querySelector('input[name="_token"]').value;
+      const fields = ['full_name', 'phone', 'address'];
+
+      async function postJson(url, payload) {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': token
+          },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.message || 'PayPal could not complete this request.');
+        }
+        return result;
+      }
+
+      paypal.Buttons({
+        createOrder: async () => {
+          if (!form.reportValidity()) {
+            throw new Error('Please complete your delivery details first.');
+          }
+          status.textContent = 'Connecting to PayPal…';
+          const payload = Object.fromEntries(fields.map((name) => [name, form.elements[name].value]));
+          const order = await postJson('{{ route('checkout.paypal.order') }}', payload);
+          return order.id;
+        },
+        onApprove: async (data) => {
+          status.textContent = 'Confirming your payment…';
+          const result = await postJson('{{ route('checkout.paypal.capture') }}', { order_id: data.orderID });
+          window.location.assign(result.redirect_url);
+        },
+        onCancel: () => {
+          status.textContent = 'PayPal checkout was cancelled. Your order has not been placed.';
+        },
+        onError: (error) => {
+          status.textContent = error.message || 'PayPal is unavailable. Please try again or choose cash on delivery.';
+        }
+      }).render('#paypal-button-container');
+    })();
+  </script>
+@endif
 @endsection

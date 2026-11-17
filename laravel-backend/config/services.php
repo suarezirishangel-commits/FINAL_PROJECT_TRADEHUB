@@ -38,5 +38,10 @@ return [
     'wordpress' => [
         'url' => rtrim((string) env('TRADEHUB_WP_URL', ''), '/'),
     ],
-
+    'paypal' => [
+        'mode' => env('TRADEHUB_PAYPAL_MODE', 'sandbox'),
+        'client_id' => env('TRADEHUB_PAYPAL_CLIENT_ID', ''),
+        'client_secret' => env('TRADEHUB_PAYPAL_CLIENT_SECRET', ''),
+        'currency' => env('TRADEHUB_PAYPAL_CURRENCY', 'PHP'),
+    ],
 ];

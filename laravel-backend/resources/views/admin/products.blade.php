@@ -29,6 +29,18 @@
           </select>
         </div>
         <div class="field">
+          <label for="seller_id">Seller</label>
+          <select id="seller_id" name="seller_id" required>
+            <option value="">Choose seller</option>
+            @foreach ($sellers as $seller)
+              <option value="{{ $seller->id }}" @selected((string) old('seller_id', $editing?->seller_id) === (string) $seller->id)>{{ $seller->full_name }}</option>
+            @endforeach
+          </select>
+          @if ($sellers->isEmpty())
+            <small class="hint">Promote an active user to Seller in Admin → Users first.</small>
+          @endif
+        </div>
+        <div class="field">
           <label for="price">Price (₱)</label>
           <input type="number" id="price" name="price" step="0.01" min="0" value="{{ old('price', $editing?->price) }}" required>
         </div>
@@ -74,7 +86,7 @@
 @endif
 <div class="table-wrap">
   <table class="data">
-    <thead><tr><th>Product</th><th>Category</th><th class="num">Price</th><th class="num">Stock</th><th>Status</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Product</th><th>Category</th><th>Seller</th><th class="num">Price</th><th class="num">Stock</th><th>Status</th><th>Actions</th></tr></thead>
     <tbody>
     @forelse ($products as $product)
       <tr>
@@ -92,6 +104,7 @@
           </div>
         </td>
         <td>{{ $product->category->name }}</td>
+        <td>{{ $product->seller?->full_name ?? 'Unassigned' }}</td>
         <td class="num">{{ \App\Support\TradeHubPresenter::price($product->price) }}</td>
         <td class="num">{{ $product->stock }}</td>
         <td>
@@ -122,7 +135,7 @@
         </td>
       </tr>
     @empty
-      <tr><td colspan="6" class="hint">No products yet. Add your first listing.</td></tr>
+      <tr><td colspan="7" class="hint">No products yet. Add your first listing.</td></tr>
     @endforelse
     </tbody>
   </table>

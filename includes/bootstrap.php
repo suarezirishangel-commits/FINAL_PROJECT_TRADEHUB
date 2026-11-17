@@ -5,6 +5,7 @@ require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/mailer.php';
+require_once __DIR__ . '/paypal.php';
 
 date_default_timezone_set('Asia/Manila');
 

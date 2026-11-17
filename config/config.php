@@ -19,6 +19,13 @@ return [
         'wordpress_url' => rtrim(getenv('TRADEHUB_WP_URL') ?: '', '/'),
     ],
 
+    'paypal' => [
+        'mode' => getenv('TRADEHUB_PAYPAL_MODE') ?: 'sandbox',
+        'client_id' => getenv('TRADEHUB_PAYPAL_CLIENT_ID') ?: '',
+        'client_secret' => getenv('TRADEHUB_PAYPAL_CLIENT_SECRET') ?: '',
+        'currency' => getenv('TRADEHUB_PAYPAL_CURRENCY') ?: 'PHP',
+    ],
+
     // Gmail SMTP integration for order confirmations.
     // For Gmail use smtp.gmail.com:587 and an App Password.
     'smtp' => [

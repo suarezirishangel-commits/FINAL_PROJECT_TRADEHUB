@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -20,10 +21,15 @@ class ProductController extends Controller
 
         return view('admin.products', [
             'categories' => Category::query()->orderBy('name')->get(),
+            'sellers' => User::query()
+                ->where('status', 'active')
+                ->whereHas('role', fn ($query) => $query->where('name', 'Seller'))
+                ->orderBy('full_name')
+                ->get(),
             'editing' => $editing,
             'showForm' => $request->query('action') === 'new' || $editing !== null,
             'products' => Product::query()
-                ->with('category')
+                ->with(['category', 'seller'])
                 ->orderByDesc('is_active')
                 ->orderBy('name')
                 ->get(),
@@ -35,6 +41,7 @@ class ProductController extends Controller
         $data = $request->validate([
             'id' => ['nullable', 'integer', 'min:0'],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'seller_id' => ['required', 'integer', 'exists:users,id'],
             'name' => ['required', 'string', 'min:3', 'max:150'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0'],
@@ -43,6 +50,16 @@ class ProductController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
             'remove_image' => ['nullable', 'boolean'],
         ]);
+        if (! User::query()
+            ->whereKey($data['seller_id'])
+            ->where('status', 'active')
+            ->whereHas('role', fn ($query) => $query->where('name', 'Seller'))
+            ->exists()) {
+            return back()
+                ->withErrors(['seller_id' => 'Select an active seller account.'])
+                ->withInput();
+        }
+
         $product = ! empty($data['id'])
             ? Product::query()->findOrFail($data['id'])
             : new Product;
@@ -63,6 +80,7 @@ class ProductController extends Controller
 
         $product->fill([
             'category_id' => $data['category_id'],
+            'seller_id' => $data['seller_id'],
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'image' => $imagePath,
@@ -96,7 +114,7 @@ class ProductController extends Controller
             return back()->with('success', 'Product availability changed on the storefront.');
         }
 
-        if ($product->transactions()->exists()) {
+        if ($product->transactions()->exists() || $product->reviews()->exists()) {
             $product->is_active = false;
             $product->save();
 

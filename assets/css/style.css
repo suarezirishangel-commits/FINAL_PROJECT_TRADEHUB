@@ -273,6 +273,9 @@ p { margin: 0 0 1rem; }
   padding: .7rem .8rem; border-radius: 10px; font-size: .9rem; cursor: pointer;
 }
 .payment-options input { margin-top: .2rem; }
+.paypal-option { border: 1px solid var(--line); border-radius: 10px; margin: .65rem 0 1rem; padding: .8rem; }
+.paypal-option h3 { font-size: .95rem; margin-bottom: .5rem; }
+.paypal-option #paypal-button-container { max-width: 420px; }
 .order-card { border: 1px solid var(--line); border-radius: var(--radius); background: #fff; margin-bottom: 1rem; overflow: hidden; }
 .order-head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .9rem 1.15rem; background: #f8faf9; border-bottom: 1px solid var(--line); font-size: .88rem; }
 .order-head strong { font-size: .92rem; }

@@ -43,8 +43,28 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class);
     }
 
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'seller_id');
+    }
+
+    public function tradeListings(): HasMany
+    {
+        return $this->hasMany(TradeListing::class);
+    }
+
+    public function tradeOffers(): HasMany
+    {
+        return $this->hasMany(TradeOffer::class, 'requester_id');
+    }
+
     public function isAdministrator(): bool
     {
         return $this->role?->name === 'Administrator';
+    }
+
+    public function isDeliveryRider(): bool
+    {
+        return $this->role?->name === 'Delivery Rider';
     }
 }

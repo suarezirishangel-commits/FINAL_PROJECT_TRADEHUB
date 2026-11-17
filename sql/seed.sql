@@ -3,7 +3,8 @@ USE tradehub;
 INSERT INTO roles (id, name) VALUES
   (1, 'Administrator'),
   (2, 'Customer'),
-  (3, 'Delivery Rider');
+  (3, 'Delivery Rider'),
+  (4, 'Seller');
 
 -- Password: Admin@123 / Customer@123 (bcrypt)
 INSERT INTO users (id, role_id, full_name, email, phone, address, password_hash, status) VALUES
@@ -94,5 +95,5 @@ INSERT INTO settings (`key`, `value`) VALUES
 INSERT INTO transactions (reference, user_id, product_id, product_name, quantity, unit_price, total_amount, payment_method, status, created_at) VALUES
   ('TH-20261001-A1B2', 2, 2, 'Sweet Mangoes (1kg)', 2, 180.00, 360.00, 'cod', 'completed', '2026-10-01 09:15:00'),
   ('TH-20261001-A1B2', 2, 11, 'Calamansi Juice (1L)', 1, 140.00, 140.00, 'cod', 'completed', '2026-10-01 09:15:00'),
-  ('TH-20261018-C3D4', 2, 4, 'Pandesal Pack (12 pcs)', 2, 90.00, 180.00, 'gcash', 'paid', '2026-10-18 07:40:00'),
-  ('TH-20261025-E5F6', 2, 7, 'Woven Abaca Tote Bag', 1, 450.00, 450.00, 'gcash', 'completed', '2026-10-25 14:02:00');
+  ('TH-20261018-C3D4', 2, 4, 'Pandesal Pack (12 pcs)', 2, 90.00, 180.00, 'paypal', 'paid', '2026-10-18 07:40:00'),
+  ('TH-20261025-E5F6', 2, 7, 'Woven Abaca Tote Bag', 1, 450.00, 450.00, 'paypal', 'completed', '2026-10-25 14:02:00');

@@ -46,10 +46,21 @@ class UserController extends Controller
         }
 
         if ($data['action'] === 'role') {
+            $role = Role::query()->findOrFail($data['role_id']);
+            if ($role->name !== 'Seller' && $user->products()->exists()) {
+                return back()->with('error', 'Reassign this user’s products before changing the Seller role.');
+            }
+
             $user->role_id = $data['role_id'];
             $user->save();
 
             return back()->with('success', 'User role updated.');
+        }
+
+        if ($user->role?->name === 'Seller'
+            && $user->status === 'active'
+            && $user->products()->where('is_active', true)->exists()) {
+            return back()->with('error', 'Reassign or hide this seller’s active products before deactivation.');
         }
 
         $user->status = $user->status === 'active' ? 'inactive' : 'active';
