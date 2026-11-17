@@ -17,7 +17,14 @@ INSERT INTO categories (id, name, slug, description) VALUES
   (2, 'Baked Goods', 'baked-goods', 'Breads, pastries, and native kakanin baked daily.'),
   (3, 'Handicrafts', 'handicrafts', 'Woven bags, home decor, and handmade souvenirs.'),
   (4, 'Beverages', 'beverages', 'Locally roasted coffee, juices, and herbal teas.'),
-  (5, 'Home & Pantry', 'home-pantry', 'Preserved goods, sauces, and household staples.');
+  (5, 'Home & Pantry', 'home-pantry', 'Preserved goods, sauces, and household staples.'),
+  (6, 'Rice & Grains', 'rice-grains', 'Rice, corn grits, and locally sourced grain staples.'),
+  (7, 'Seafood', 'seafood', 'Fresh and preserved fish from local markets.'),
+  (8, 'Snacks & Sweets', 'snacks-sweets', 'Packaged local snacks and traditional sweets.'),
+  (9, 'Home & Kitchen', 'home-kitchen', 'Reusable household goods and kitchen accessories.'),
+  (10, 'Clothing & Accessories', 'clothing-accessories', 'Clothing, footwear, and wearable accessories.'),
+  (11, 'Personal Care', 'personal-care', 'Everyday personal hygiene and grooming essentials.'),
+  (12, 'Office & School', 'office-school', 'Stationery, school supplies, and everyday bags.');
 
 INSERT INTO products (category_id, name, description, image, price, stock, is_active) VALUES
   (1, 'Organic Kangkong Bundle', 'Crisp, pesticide-free water spinach harvested the same morning. Approx. 500g per bundle.', 'assets/uploads/products/20261116-195705-cc0f19c6.png', 45.00, 40, 1),
@@ -35,6 +42,40 @@ INSERT INTO products (category_id, name, description, image, price, stock, is_ac
   (5, 'Homemade Bagoong (250g)', 'Fermented shrimp paste cooked the traditional way.', 'assets/uploads/products/20261116-195543-c5df4108.png', 120.00, 26, 1),
   (5, 'Coconut Jam (Sinamak) 300g', 'Rich coconut spread slow-cooked in small batches.', 'assets/uploads/products/20261116-195506-b2873ff2.png', 165.00, 14, 1),
   (5, 'Native Vinegar (500ml)', 'Sugarcane vinegar aged for six months.', 'assets/uploads/products/20261116-195649-c54305ef.png', 100.00, 0, 1);
+
+INSERT INTO products (category_id, name, description, image, price, stock, is_active) VALUES
+  (5, 'Dried Mangoes (200g)', 'Sweet dried mango slices packed for snacking.', 'assets/uploads/products/20261116-195525-4e286e69.png', 180.00, 20, 1),
+  (5, 'Pili Nuts (250g)', 'Roasted pili nuts packed in a 250g pouch.', 'assets/uploads/products/20261116-195739-f34934ad.png', 250.00, 15, 1),
+  (1, 'Purple Yam (Ube) 500g', 'Locally grown purple yam (ube), approximately 500g.', 'assets/uploads/products/20261116-200234-8d67c0dd.png', 120.00, 20, 1),
+  (5, 'Peanut Butter (250g)', 'Creamy peanut butter in a 250g jar.', 'assets/uploads/products/20261116-200335-cf47e516.png', 150.00, 20, 1),
+  (1, 'Bananas (1kg)', 'Fresh ripe bananas, approximately 1kg.', 'assets/uploads/products/20261116-200418-e135dc3d.png', 80.00, 25, 1),
+  (3, 'Bamboo Mat', 'Woven bamboo mat for home use.', 'assets/uploads/products/20261116-200543-b91f5d92.png', 300.00, 10, 1),
+  (5, 'Banana Ketchup (320g)', 'Sweet Filipino banana ketchup in a 320g bottle.', 'assets/uploads/products/20261116-200626-e3782df8.png', 80.00, 20, 1);
+
+INSERT INTO products (category_id, name, description, image, price, stock, is_active) VALUES
+  (6, 'ST25 Rice (1kg)', 'Uncooked ST25 rice, packed in a 1kg bag.', 'assets/uploads/products/rice_st25.jpg', 180.00, 20, 1),
+  (6, 'Basmati Rice (1kg)', 'Uncooked basmati rice, packed in a 1kg bag.', 'assets/uploads/products/basmati_rice.jpg', 220.00, 20, 1),
+  (6, 'Corn Grits (1kg)', 'Coarse corn grits for porridge and other dishes.', 'assets/uploads/products/corn_grits.jpg', 90.00, 20, 1),
+  (7, 'Fresh Bangus (1kg)', 'Milkfish (bangus), sold by approximate 1kg weight.', 'assets/uploads/products/bangus.jpg', 280.00, 15, 1),
+  (7, 'Fresh Tilapia (1kg)', 'Tilapia, sold by approximate 1kg weight.', 'assets/uploads/products/tilapia.jpg', 220.00, 15, 1),
+  (7, 'Dried Fish (250g)', 'Salted dried fish, packed in a 250g portion.', 'assets/uploads/products/dried_fish.jpg', 180.00, 15, 1),
+  (8, 'Banana Chips (200g)', 'Crispy banana chips packed in a 200g pouch.', 'assets/uploads/products/banana_chips.png', 120.00, 20, 1),
+  (8, 'Cassava Chips (200g)', 'Tapioca chips packed in a 200g pouch.', 'assets/uploads/products/cassava_chips.jpg', 100.00, 20, 1),
+  (8, 'Coconut Candy (200g)', 'Coconut candy packed in a 200g pouch.', 'assets/uploads/products/coconut_candy.jpg', 150.00, 20, 1);
+
+INSERT INTO products (category_id, name, description, image, price, stock, is_active) VALUES
+  (9, 'Banana Fiber Woven Basket', 'Handwoven banana-fiber basket for home storage.', 'assets/uploads/products/woven_basket.jpg', 350.00, 10, 1),
+  (9, 'Handmade Pottery Mug', 'Handmade ceramic mug for hot or cold drinks.', 'assets/uploads/products/pottery_mug.jpg', 280.00, 12, 1),
+  (9, 'Wooden Cutting Board', 'Reusable wooden board for kitchen preparation.', 'assets/uploads/products/cutting_board.jpg', 320.00, 10, 1),
+  (10, 'Printed Cotton Scarf', 'Lightweight printed scarf for everyday wear.', 'assets/uploads/products/printed_scarf.jpg', 250.00, 12, 1),
+  (10, 'Tie-Dye T-Shirt', 'Colorful tie-dye cotton T-shirt.', 'assets/uploads/products/tie_dye_tshirt.jpg', 450.00, 10, 1),
+  (10, 'Leather Sandals', 'Pair of leather sandals for casual wear.', 'assets/uploads/products/leather_sandals.jpg', 700.00, 8, 1),
+  (11, 'Handmade Soap Bar', 'Handmade soap bar for everyday washing.', 'assets/uploads/products/handmade_soap.jpg', 120.00, 20, 1),
+  (11, 'Bamboo Toothbrush', 'Reusable bamboo-handle toothbrush.', 'assets/uploads/products/bamboo_toothbrush.jpg', 90.00, 25, 1),
+  (11, 'Shampoo Bottle', 'Shampoo in a reusable-size bottle.', 'assets/uploads/products/shampoo_bottle.jpg', 180.00, 15, 1),
+  (12, 'Notebook Set', 'Set of notebooks for notes and schoolwork.', 'assets/uploads/products/notebooks.jpg', 150.00, 20, 1),
+  (12, 'Colored Pencil Set', 'Colored pencils for drawing and school projects.', 'assets/uploads/products/pencil_set.jpg', 130.00, 18, 1),
+  (12, 'School Backpack', 'Everyday backpack for books and school supplies.', 'assets/uploads/products/school_bag.jpg', 650.00, 10, 1);
 
 INSERT INTO announcements (title, body, is_published) VALUES
   ('Free delivery within Metro Manila', 'Order a minimum of PHP 1,000 and get free same-day delivery within Metro Manila. Promo runs until the end of the month.', 1),

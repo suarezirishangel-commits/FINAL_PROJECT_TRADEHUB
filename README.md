@@ -87,7 +87,11 @@ legacy feature is present in the Laravel application.
    using phpMyAdmin. **The schema drops and recreates tables. Do not import it into a database
    containing data you need to keep.**
    If the database and seed products already exist, run `sql/migrate_seed_product_images.sql`
-   once to link the bundled product photos without recreating the tables.
+   to link the bundled photos and add any missing photo-backed sample categories and products
+   (including household, clothing, personal care, and school supplies) without recreating the
+   tables. The migration is safe to run again. See `assets/uploads/products/IMAGE_CREDITS.md`
+   for third-party photo attribution and licensing. Sample product prices and stock are for
+   demonstration only.
 3. Configure the database credentials in `config/config.php` or with the `TRADEHUB_DB_*`
    environment variables. The default database name is `tradehub`.
 4. Open <http://localhost/FINAL_PROJECT_TRADEHUB/>.
