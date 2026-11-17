@@ -2,8 +2,10 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/object-storage.php';
 require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/paypal.php';
 
@@ -20,12 +22,14 @@ if (!defined('APP_BASE')) {
 // Secure session handling.
 if (session_status() === PHP_SESSION_NONE) {
     session_name('TRADEHUBSESSID');
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => APP_BASE === '' ? '/' : APP_BASE . '/',
         'httponly' => true,
         'samesite' => 'Lax',
-        'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'secure'   => $https,
     ]);
     session_start();
 }

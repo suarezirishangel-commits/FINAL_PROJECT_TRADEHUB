@@ -259,7 +259,20 @@ function product_image_url(?string $path): ?string
         return null;
     }
 
-    return preg_match('~^https?://~i', $path) ? $path : url($path);
+    if (preg_match('~^https?://~i', $path)) {
+        return $path;
+    }
+
+    $storage = config()['object_storage'];
+    if ($storage['bucket'] !== '') {
+        if ($storage['url'] === '') {
+            throw new RuntimeException('AWS_URL must point to the public product-image URL.');
+        }
+
+        return $storage['url'] . '/' . ltrim($path, '/');
+    }
+
+    return url($path);
 }
 
 /** Emoji illustration used to identify a product until a photo is uploaded. */
@@ -325,18 +338,42 @@ function store_product_image(array $file): array
         return ['path' => null, 'error' => 'The product photo must be a JPG, PNG, WebP, or GIF image.'];
     }
 
+    $filename = date('Ymd-His') . '-' . bin2hex(random_bytes(4)) . '.' . $extensions[$info[2]];
+    $path = 'assets/uploads/products/' . $filename;
+
+    if (config()['object_storage']['bucket'] !== '') {
+        $stream = fopen((string) $file['tmp_name'], 'rb');
+        if ($stream === false) {
+            return ['path' => null, 'error' => 'The uploaded image could not be opened.'];
+        }
+
+        try {
+            tradehub_image_storage_client()->putObject([
+                'Bucket' => config()['object_storage']['bucket'],
+                'Key' => $path,
+                'Body' => $stream,
+                'ContentType' => $info['mime'] ?? 'application/octet-stream',
+            ]);
+        } catch (Aws\Exception\AwsException $error) {
+            error_log('TradeHub product image upload failed: ' . $error->getMessage());
+            return ['path' => null, 'error' => 'The product photo could not be saved to shared storage.'];
+        } finally {
+            fclose($stream);
+        }
+
+        return ['path' => $path, 'error' => null];
+    }
+
     $directory = __DIR__ . '/../assets/uploads/products';
     if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
         return ['path' => null, 'error' => 'The upload folder could not be created. Check folder permissions.'];
     }
 
-    $filename = date('Ymd-His') . '-' . bin2hex(random_bytes(4)) . '.' . $extensions[$info[2]];
-
     if (!move_uploaded_file((string) $file['tmp_name'], $directory . '/' . $filename)) {
         return ['path' => null, 'error' => 'The uploaded image could not be saved.'];
     }
 
-    return ['path' => 'assets/uploads/products/' . $filename, 'error' => null];
+    return ['path' => $path, 'error' => null];
 }
 
 /** Delete a stored product photo (ignores external URLs and files outside the uploads folder). */
@@ -344,6 +381,14 @@ function delete_product_image(?string $path): void
 {
     $path = trim((string) $path);
     if (!str_starts_with($path, 'assets/uploads/products/')) {
+        return;
+    }
+
+    if (config()['object_storage']['bucket'] !== '') {
+        tradehub_image_storage_client()->deleteObject([
+            'Bucket' => config()['object_storage']['bucket'],
+            'Key' => $path,
+        ]);
         return;
     }
 

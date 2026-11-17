@@ -115,7 +115,8 @@ available in the separate legacy PHP application.
    To enable server-verified PayPal checkout in both applications, run
    `sql/migrate_paypal_checkout.sql` once. Existing GCash transactions are retained as historical
    records; new checkout no longer offers GCash.
-3. Configure the database credentials in `config/config.php` or with the `TRADEHUB_DB_*`
+3. Install PHP dependencies from the repository root with `composer install`. Configure the
+   database credentials in `config/config.php` or with the `TRADEHUB_DB_*`
    environment variables. To enable PayPal in the legacy PHP app:
    - Sign in at <https://developer.paypal.com/> and open **Apps & Credentials**.
    - Under **Sandbox**, create an app and copy its **Client ID** and **Secret**. Use sandbox
@@ -163,6 +164,56 @@ available in the separate legacy PHP application.
 
 The Laravel models use the existing TradeHub tables, including `users.password_hash`. Do not
 run `php artisan migrate` against `tradehub`; use the project's SQL schema instead.
+
+## Render Deployment
+
+The root PHP app and `laravel-backend/` are separate web services. The root `render.yaml`
+Blueprint creates one Docker service for each; both are configured to use the same existing
+MySQL database and S3-compatible product-image bucket.
+
+1. Make sure the MySQL server is hosted somewhere Render can reach. A database running only on
+   your computer/WAMP is not reachable by Render. Do not expose a local MySQL server directly to
+   the public internet.
+2. Confirm the database has the TradeHub schema before deploying. For a new, empty database,
+   import `sql/schema.sql` and then `sql/seed.sql` only if you want its demo users and products.
+   **`schema.sql` drops and recreates tables. Never run it against data you need to keep.** For
+   an existing database, use only the applicable SQL migrations described in Local Setup. Do not
+   run `php artisan migrate`.
+3. Create an S3-compatible bucket for product images and credentials restricted to that bucket's
+   image prefix (`ListBucket`, `GetObject`, `PutObject`, and `DeleteObject`). Configure public read
+   access only for product images (or use a public CDN URL); keep the access key and secret private.
+   Both apps must use the same bucket and public base URL. Before deploying, copy any existing
+   uploaded product photos that are not in the repository to the bucket, preserving their
+   `assets/uploads/products/` object keys. Startup sync seeds the bundled photos only; it cannot
+   transfer files from your local computer.
+4. In Render, create a new **Blueprint** from this repository and fill the prompted environment
+   variables for both services:
+   - Root PHP service: `TRADEHUB_DB_HOST`, `TRADEHUB_DB_PORT`, `TRADEHUB_DB_NAME`,
+     `TRADEHUB_DB_USER`, `TRADEHUB_DB_PASS`.
+   - Laravel service: `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
+     Use the same database values for both apps.
+   - Both services: `AWS_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
+     `AWS_DEFAULT_REGION`, `AWS_ENDPOINT`, and `AWS_URL`. `AWS_ENDPOINT` is the S3 API endpoint
+     for providers such as Cloudflare R2; it can be blank for AWS S3. `AWS_URL` is the public base
+     URL for the bucket/CDN, without a trailing slash. Set `AWS_USE_PATH_STYLE_ENDPOINT` to
+     `true` only if your S3-compatible provider requires path-style requests. The app copies the
+     bundled product photos to the bucket on startup if they are not already there.
+   - Laravel service: generate an application key locally with
+     `php artisan key:generate --show` from `laravel-backend/` and enter the result as `APP_KEY`.
+     Never commit the key. Laravel uses Render's `RENDER_EXTERNAL_URL` as `APP_URL` when no
+     explicit `APP_URL` is configured.
+   - If your MySQL provider requires a CA certificate, add it as a Render secret file and set
+     `TRADEHUB_DB_SSL_CA` for the root PHP service and `MYSQL_ATTR_SSL_CA` for Laravel to that
+     file's path.
+5. After deploy, open the two service URLs shown in Render. The root PHP service uses Apache;
+   the Laravel service builds its Vite assets during the Docker build. The current Blueprint uses
+   Render's free service plan, which may spin down when idle. Change the plans in `render.yaml`
+   if you need always-on services.
+
+PayPal and email remain optional. Add their credentials as Render environment variables when
+needed. Use live PayPal credentials only for real payments. Product-image storage is shared
+through S3; don't replace it with per-service disks, or images uploaded in one app won't be
+available to the other.
 
 ## WordPress Headless CMS
 WordPress can manage storefront content and announcements. The legacy PHP application also

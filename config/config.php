@@ -11,6 +11,7 @@ return [
        'name'    => getenv('TRADEHUB_DB_NAME') ?: 'tradehub',
         'user'    => getenv('TRADEHUB_DB_USER') ?: 'root',
         'pass'    => getenv('TRADEHUB_DB_PASS') ?: '',
+       'ssl_ca'  => getenv('TRADEHUB_DB_SSL_CA') ?: '',
         'charset' => 'utf8mb4',
     ],
 
@@ -24,6 +25,19 @@ return [
         'client_id' => getenv('TRADEHUB_PAYPAL_CLIENT_ID') ?: '',
         'client_secret' => getenv('TRADEHUB_PAYPAL_CLIENT_SECRET') ?: '',
         'currency' => getenv('TRADEHUB_PAYPAL_CURRENCY') ?: 'PHP',
+    ],
+
+    'object_storage' => [
+        'bucket' => getenv('AWS_BUCKET') ?: '',
+        'region' => getenv('AWS_DEFAULT_REGION') ?: 'auto',
+        'endpoint' => getenv('AWS_ENDPOINT') ?: '',
+        'url' => rtrim(getenv('AWS_URL') ?: '', '/'),
+        'key' => getenv('AWS_ACCESS_KEY_ID') ?: '',
+        'secret' => getenv('AWS_SECRET_ACCESS_KEY') ?: '',
+        'use_path_style_endpoint' => filter_var(
+            getenv('AWS_USE_PATH_STYLE_ENDPOINT') ?: 'false',
+            FILTER_VALIDATE_BOOLEAN
+        ),
     ],
 
     // Gmail SMTP integration for order confirmations.
